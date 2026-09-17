@@ -1,0 +1,11 @@
+# Scope gitleaks to code we write. Everything allowlisted here was reviewed on 18 Sep.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Vendored dependencies (OpenZeppelin/forge-std test fixtures carry example keys)"
+paths = ['''contracts/lib/''']
+
+[[allowlists]]
+description = "Templates and specs: variable names with empty values, never real secrets"
+paths = ['''\.env\.example$''', '''grounded-docs/''']
