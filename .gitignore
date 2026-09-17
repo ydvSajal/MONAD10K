@@ -1,0 +1,42 @@
+# Local agent memory
+CLAUDE.md
+.claude/settings.local.json
+
+# Secrets — never commit (template .env.example IS committed)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+keystore/
+
+# Node / pnpm
+node_modules/
+dist/
+.pnpm-store/
+*.tsbuildinfo
+
+# Next.js / Vercel
+.next/
+.vercel/
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/*/31337/
+contracts/broadcast/**/dry-run/
+
+# Envio indexer
+indexer/generated/
+
+# Test / coverage
+coverage/
+lcov.info
+playwright-report/
+test-results/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
