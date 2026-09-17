@@ -40,6 +40,3 @@ test-results/
 Thumbs.db
 .vscode/
 .idea/
-
-# Foundry deps are vendored via forge install (not submodules here)
-contracts/lib/
