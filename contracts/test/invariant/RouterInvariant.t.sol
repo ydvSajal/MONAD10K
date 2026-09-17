@@ -26,7 +26,13 @@ contract Handler is Test {
     }
 
     function pay(uint256 actorSeed, uint96 value) external {
-        address actor = address(uint160(bound(actorSeed, 1, type(uint160).max)));
+        address actor = address(uint160(uint256(keccak256(abi.encode(actorSeed)))));
+        // A payer must be an outside account: minting to the router or registry and then
+        // reverting below the floor would strand tokens there and fail the balance invariant
+        // for a reason the contract is not responsible for.
+        if (actor == address(router) || actor == address(receipts) || actor == address(token) || actor.code.length > 0) {
+            return;
+        }
         value = uint96(bound(value, 0, 100e6));
         token.mint(actor, value);
         vm.startPrank(actor);
