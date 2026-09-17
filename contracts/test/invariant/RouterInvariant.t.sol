@@ -30,7 +30,8 @@ contract Handler is Test {
         // A payer must be an outside account: minting to the router or registry and then
         // reverting below the floor would strand tokens there and fail the balance invariant
         // for a reason the contract is not responsible for.
-        if (actor == address(router) || actor == address(receipts) || actor == address(token) || actor.code.length > 0) {
+        if (actor == address(router) || actor == address(receipts) || actor == address(token) || actor.code.length > 0)
+        {
             return;
         }
         value = uint96(bound(value, 0, 100e6));
