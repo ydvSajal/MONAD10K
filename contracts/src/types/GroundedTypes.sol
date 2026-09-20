@@ -7,7 +7,7 @@ enum ReceiptStatus {
     Consumed
 }
 
-/// @dev One payment, one rating. Packs into two slots.
+/// @dev One payment, one rating. Four slots: agentId | payer | token+amount | paidAt+status.
 struct Receipt {
     uint256 agentId;
     address payer;

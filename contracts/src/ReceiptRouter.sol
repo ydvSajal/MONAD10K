@@ -32,6 +32,7 @@ contract ReceiptRouter {
     error NoAgentWallet(uint256 agentId);
     error BadSignatureLength(uint256 length);
     error NoTokens();
+    error InvalidRecipient(address to);
 
     constructor(IIdentityRegistry identity_, ReceiptRegistry receipts_, address[] memory tokens_) {
         if (tokens_.length == 0) revert NoTokens();
@@ -88,6 +89,7 @@ contract ReceiptRouter {
         if (value > type(uint96).max) revert AmountTooLarge(value);
         to = identity.getAgentWallet(agentId);
         if (to == address(0)) revert NoAgentWallet(agentId);
+        if (to == address(this)) revert InvalidRecipient(to);
     }
 
     function _issue(uint256 agentId, address payer, address token, uint256 value) private returns (uint256) {

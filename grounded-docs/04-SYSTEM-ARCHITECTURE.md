@@ -2,7 +2,7 @@
 
 ## 0. Verified environment facts (18 Sep, re-checked against testnet)
 
-Every assumption below was probed on chain 10143, not read from a doc. Re-run `scripts/verify-env.sh` before the 21 Sep deploy.
+Every assumption below was probed on chain 10143, not read from a doc. Re-run the fork test (`forge test -n monad`, needs `MONAD_FORK_RPC`) before the 21 Sep deploy; it covers USDC EIP-3009 and the live agent. The P256 precompile and ERC-8004 selector probes were run by hand (no script checked in yet).
 
 | Fact | Verified value | Consequence |
 |---|---|---|
@@ -94,7 +94,7 @@ Read this map with §3: everything in **Services** can be deleted and Grounded s
 |---|---|---|---|
 | Contracts | Everything score-related | — | (No admin exists) |
 | ERC-8004 registries | Identity, owner, wallet, feedback storage | Feedback truth | Grounded filters it |
-| ERC-8004 **upgrade owner** | Nothing | Everything — a malicious upgrade could make `readFeedback` lie or `ownerOf` flip | Unfixable by us. State it in the threat model as an inherited assumption; `Erc8004Adapter.sol` is the single file that changes if they redeploy, and `deployments/10143.json` pins the impl addresses we verified against |
+| ERC-8004 **upgrade owner** | Nothing | Everything — a malicious upgrade could make `readFeedback` lie or `ownerOf` flip | Unfixable by us. State it in the threat model as an inherited assumption; `Erc8004Adapter.sol` is the single file that changes if they redeploy, and `deployments/10143.json` (written at deploy, not yet in the repo) will pin the impl addresses we verified against |
 | USDC token | Transfer correctness | — | Out of our control |
 | SDK | Convenience | Anything | Any client can call contracts directly |
 | Indexer | History, lists, raw counts | Scores | Explorer still reads `scoreOf` onchain |

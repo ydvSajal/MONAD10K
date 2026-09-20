@@ -7,5 +7,5 @@ description = "Vendored dependencies (OpenZeppelin/forge-std test fixtures carry
 paths = ['''contracts/lib/''']
 
 [[allowlists]]
-description = "Templates and specs: variable names with empty values, never real secrets"
-paths = ['''\.env\.example$''', '''grounded-docs/''']
+description = "Env template: variable names with empty values, never real secrets"
+paths = ['''\.env\.example$''']

@@ -51,6 +51,28 @@ contract ReceiptRouterTest is Base {
         router.pay(999, address(usdc), 1e6);
     }
 
+    function test_pay_revertsWhenAgentWalletIsRouter() public {
+        identity.setAgent(2, agentOwner, address(router));
+        vm.prank(payer);
+        vm.expectRevert(abi.encodeWithSelector(ReceiptRouter.InvalidRecipient.selector, address(router)));
+        router.pay(2, address(usdc), 1e6);
+    }
+
+    function test_pay_revertsAboveUint96() public {
+        uint256 tooBig = uint256(type(uint96).max) + 1;
+        usdc.mint(payer, tooBig);
+        vm.prank(payer);
+        vm.expectRevert(abi.encodeWithSelector(ReceiptRouter.AmountTooLarge.selector, tooBig));
+        router.pay(AGENT, address(usdc), tooBig);
+    }
+
+    function test_constructor_revertsWithNoTokens() public {
+        address predictedRouter = vm.computeCreateAddress(address(this), vm.getNonce(address(this)) + 1);
+        ReceiptRegistry reg = new ReceiptRegistry(predictedRouter, grounded);
+        vm.expectRevert(ReceiptRouter.NoTokens.selector);
+        new ReceiptRouter(IIdentityRegistry(address(identity)), reg, new address[](0));
+    }
+
     /// @dev The floor is 0.01 *normalised*, not 10_000 raw units — an 18-decimal token must
     ///      not let dust through.
     function test_pay_normalisesDecimals() public {
