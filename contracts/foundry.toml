@@ -7,8 +7,8 @@ script = "script"
 
 solc = "0.8.28"
 # Monad docs confirm the P256 precompile (EIP-7951) but do not state a hardfork.
-# Stay on shanghai: no MCOPY/TSTORE emitted, PUSH0 available. Revisit only with a measured reason.
-evm_version = "shanghai"
+# cancun: OZ WebAuthn -> Bytes.sol uses MCOPY. Probed live on 10143 (eth_call override, 21 Sep): MCOPY + TSTORE execute.
+evm_version = "cancun"
 optimizer = true
 optimizer_runs = 200
 bytecode_hash = "none"
