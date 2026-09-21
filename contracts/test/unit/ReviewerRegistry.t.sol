@@ -56,7 +56,7 @@ contract ReviewerRegistryTest is Test, WebAuthnHelper {
 
     function test_bind_revertsOnWrongKeySignature() public {
         (uint256 qx, uint256 qy) = vm.publicKeyP256(PK_A);
-        WebAuthnSig memory p = _proof(PK_B, alice, FLAGS_UP_UV, rp); // signed by B, claims A
+        WebAuthnSig memory p = _webauthnSig(PK_B, rp, FLAGS_UP_UV, _digest(PK_A, alice)); // right challenge, wrong signer
         vm.prank(alice);
         vm.expectRevert(ReviewerRegistry.BadSignature.selector);
         reg.bind(qx, qy, p);

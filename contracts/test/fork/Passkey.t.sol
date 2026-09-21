@@ -14,7 +14,7 @@ contract PasskeyForkTest is Test, WebAuthnHelper {
         string memory rpc = vm.envOr("MONAD_FORK_RPC", string(""));
         vm.skip(bytes(rpc).length == 0);
         vm.createSelectFork(rpc);
-        assertGt(address(0x100).balance + 1, 0); // touch the fork so a dead RPC fails loudly
+        assertEq(block.chainid, 10_143, "fork is not Monad testnet");
 
         ReviewerRegistry reg = new ReviewerRegistry(_rpIdHash("localhost"));
         address alice = makeAddr("alice");
