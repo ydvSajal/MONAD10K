@@ -33,17 +33,63 @@ dead ends. Pull real ones from these, then fill the table:
 > The `Registered` event trick is the best of these: it is a list of teams that have *already*
 > registered an ERC-8004 agent on Monad testnet. They are, by definition, the people this is for.
 
-## Target list
+## Target list — 21 real teams, pulled off chain (23 Sep)
 
-Fill in as you go. Aim for 20 rows.
+Enumerated `ownerOf` / `getAgentWallet` for agent ids 1-53 on the live ERC-8004 identity registry.
+These are addresses that have **already registered an agent on Monad testnet**: the exact audience.
 
-| # | Team / project | Where found | Contact | Status | Last touch | Next step |
+You still have to find the human behind each address. The practical routes: search the address on the
+hackathon Discord and on X, check whether it resolves to an ENS or a known deployer, and look at the
+agent's `tokenURI` / `agentURI`, which often carries a name, website or contact.
+
+"Payable" means the agent has a payout wallet set, so `pay()` works today. A team marked **no wallet**
+cannot receive a payment until they call `setAgentWallet` — see the note below, it is also a warm
+opener ("your agent cannot be paid, here is the one-liner to fix it").
+
+| # | Owner address | Agents | Payable | Contact | Status | Next step |
 |---|---|---|---|---|---|---|
-| 1 |  |  |  | not contacted |  |  |
-| 2 |  |  |  | not contacted |  |  |
-| 3 |  |  |  | not contacted |  |  |
+| 1 | `0x0fd6B881b208d2b0b7Be11F1eB005A2873dD5D2e` | 27-42, 49-53 (19) | no wallet |  | not contacted | biggest operator on the registry — start here |
+| 2 | `0x567bDc4086eFc460811798d1075a21359E34072d` | 14-17 | yes |  | not contacted | only owner using distinct payout wallets — sophisticated |
+| 3 | `0xFcCf1a167790d6657Eed65173DB9d4eB546AB7E8` | 23, 46-48 | no wallet |  | not contacted |  |
+| 4 | `0x949a537aFdcc2958edeC473Ce8C040E31EA6EE2B` | 18-20 | yes |  | not contacted |  |
+| 5 | `0xf043B0d473a2EDD7C5D6F4d931334096B77A7EDC` | 2, 3 | yes |  | not contacted |  |
+| 6 | `0xa05Dd22AB6494Cf7743b60F991fE48A817e28Fa2` | 4, 5 | yes |  | not contacted |  |
+| 7 | `0xC799F507cB3257d9332719D93f0311377803eaB1` | 6, 7 | yes |  | not contacted |  |
+| 8 | `0x72a4d3cC389121c911B3A72BD4d495D3D640ad00` | 11, 12 | yes |  | not contacted |  |
+| 9 | `0x528110a09322B47409bCec7DB3484Be94e88b0AD` | 44, 45 | no wallet |  | not contacted |  |
+| 10 | `0xf50B97A486323d51f5b75749E27f7784C32FCcAf` | 30, 51 | no wallet |  | not contacted |  |
+| 11 | `0x133603465aDdE7C39fa0E6E34b264E1573e1FD08` | 1 | yes |  | not contacted | agent 1, our fork tests already pay it |
+| 12 | `0xBa01864b0303d00a112E2F6a6D3B2E402D903620` | 8 | yes |  | not contacted |  |
+| 13 | `0x1F36B4c388CA19Ddb5b90DcF6E8f8309652Ab3dE` | 9 | yes |  | not contacted |  |
+| 14 | `0x6cCBe5f5Cf80f66a0ef286287e2A75e4aFec7Fbf` | 10 | yes |  | not contacted |  |
+| 15 | `0xb6E8B2692cdc3A31280DCa8E9C8b88bb5e436f24` | 13 | yes |  | not contacted |  |
+| 16 | `0xcb8a98250c4471c21011dc979b181D38b5A103c7` | 22 | yes |  | not contacted |  |
+| 17 | `0xab448e3E475d1562C027bE9670352119444F4880` | 43 | yes |  | not contacted |  |
+| 18 | `0xE08f2c466b1Dbb59ce4858945C39502d5F1b1fC4` | 21 | no wallet |  | not contacted |  |
+| 19 | `0xcFeF3fef61AE6dbBaE4B588204e38CBEaDD4c963` | 24 | no wallet |  | not contacted |  |
+| 20 | `0x527C32204369806Ba55721Ea200aC7B12c387409` | 25 | no wallet |  | not contacted |  |
+| 21 | `0xB2d38d0307564d234C861716955ee2887c4e778e` | 26 | no wallet |  | not contacted |  |
 
 Status values: `not contacted` · `contacted` · `replied` · `said yes` · `SDK installed` · `live` · `declined`
+
+Refresh the census any time:
+
+```bash
+for i in $(seq 1 80); do
+  cast call 0x8004A818BFB912233c491871b3d84c89A494BD9e "ownerOf(uint256)(address)" $i \
+    --rpc-url https://testnet-rpc.monad.xyz
+done
+```
+
+### The "your agent cannot be paid" opener
+
+More than half of the registered agents have no payout wallet, so nobody can pay them at all. That is
+a genuinely useful thing to tell someone, and it opens the conversation without a pitch:
+
+> Your agent on the Monad ERC-8004 registry has no payout wallet set, so `getAgentWallet` returns
+> zero and payments to it revert. Fix is one call, `setAgentWallet`, signed by the wallet you want
+> paid. I noticed because I am building payment-grounded reputation on top of that registry — happy
+> to show you if it is useful, but the wallet thing is worth fixing either way.
 
 ## Message templates
 
