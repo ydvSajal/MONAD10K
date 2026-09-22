@@ -114,7 +114,10 @@ Every check has its own error and its own test. The order is cheapest-first, so 
 | Reusing one payment | The receipt is consumed on the first rating, and expires after 30 days |
 | Score inherited after a sale | `ownerChangedAt` is recorded, so consumers can discount ratings from before the sale |
 
-Honest limits: a passkey is **not** proof of personhood — the contract cannot tell a hardware key from a software one, and it is not meant to. Sybil resistance comes from the payments, not the keys. And an agent can still buy its own good reviews through unrelated wallets; that costs real money each time, which is the point rather than a fix.
+Honest limits:
+
+- A passkey is **not** proof of personhood. The contract cannot tell a hardware key from a software one, and it is not meant to. Sybil resistance comes from the payments, not the keys.
+- **An agent's owner can still rate itself through wallets it controls.** The exclusions only catch addresses linked to the agent on chain. And because the payment lands in the agent's *own* wallet, the owner gets the money back — the real cost of self-rating is gas, not the amount paid. Payment-grounding stops strangers from spraying reviews at an agent; it does not stop an agent from reviewing itself through fresh wallets. The explorer is meant to surface reviewer patterns so this stays visible rather than hidden.
 
 ## Repo
 
