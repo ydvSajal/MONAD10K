@@ -1,0 +1,357 @@
+<title>Grounded Progress</title>
+<meta name="description" content="Build tree for the Grounded hackathon project — done, overdue, and coming, by day." />
+<style>
+  :root {
+    --bg: #f6f4ef;
+    --surface: #ffffff;
+    --border: #dcd8cd;
+    --text: #1c211d;
+    --text-dim: #5b6158;
+    --accent: #3f6b4a;
+    --accent-soft: #dbe6dd;
+    --done: #2f8f52;
+    --done-bg: #e3f3e6;
+    --overdue: #b6431f;
+    --overdue-bg: #fbe7dd;
+    --upcoming: #83887f;
+    --upcoming-bg: #eceae3;
+    --line: var(--border);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11140f;
+      --surface: #181c15;
+      --border: #2b3126;
+      --text: #e9ede6;
+      --text-dim: #9aa294;
+      --accent: #7fb88f;
+      --accent-soft: #233229;
+      --done: #5fce82;
+      --done-bg: #1c3324;
+      --overdue: #f0895c;
+      --overdue-bg: #3a2016;
+      --upcoming: #767c72;
+      --upcoming-bg: #20241c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11140f;
+    --surface: #181c15;
+    --border: #2b3126;
+    --text: #e9ede6;
+    --text-dim: #9aa294;
+    --accent: #7fb88f;
+    --accent-soft: #233229;
+    --done: #5fce82;
+    --done-bg: #1c3324;
+    --overdue: #f0895c;
+    --overdue-bg: #3a2016;
+    --upcoming: #767c72;
+    --upcoming-bg: #20241c;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", -apple-system, sans-serif;
+    padding-inline: 20px;
+    padding-block: 28px 48px;
+    max-width: 760px;
+    margin-inline: auto;
+  }
+  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; margin: 0; text-wrap: balance; }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  header { margin-bottom: 28px; }
+  header .eyebrow {
+    color: var(--accent); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    font-family: "IBM Plex Mono", monospace; margin-bottom: 6px;
+  }
+  h1 { font-size: 30px; font-weight: 600; }
+  header p { color: var(--text-dim); margin: 8px 0 0; font-size: 14px; line-height: 1.5; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;
+    margin: 22px 0 32px;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .stat .n { font-family: "Fraunces", serif; font-size: 22px; font-weight: 600; line-height: 1.1; }
+  .stat .l { color: var(--text-dim); font-size: 11.5px; margin-top: 4px; line-height: 1.3; }
+
+  section { margin-bottom: 34px; }
+  section > h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim);
+    font-family: "IBM Plex Mono", monospace; font-weight: 500; margin-bottom: 14px;
+  }
+
+  .tree { position: relative; padding-left: 22px; }
+  .tree::before {
+    content: ""; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 2px;
+    background: var(--line);
+  }
+  .node { position: relative; padding-bottom: 18px; }
+  .node:last-child { padding-bottom: 0; }
+  .node::before {
+    content: ""; position: absolute; left: -22px; top: 5px; width: 11px; height: 11px;
+    border-radius: 50%; border: 2px solid var(--surface); background: var(--upcoming);
+  }
+  .node.done::before { background: var(--done); }
+  .node.overdue::before { background: var(--overdue); }
+  .node.now::before { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .card .row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .card .day { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--text-dim); }
+  .card h3 { font-size: 15.5px; font-weight: 600; margin-top: 2px; }
+  .badge {
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; padding: 2px 8px; border-radius: 999px;
+    white-space: nowrap; font-weight: 500;
+  }
+  .badge.done { color: var(--done); background: var(--done-bg); }
+  .badge.overdue { color: var(--overdue); background: var(--overdue-bg); }
+  .badge.upcoming { color: var(--text-dim); background: var(--upcoming-bg); }
+  .badge.now { color: var(--accent); background: var(--accent-soft); }
+
+  .items { list-style: none; margin: 8px 0 0; padding: 0; font-size: 13px; color: var(--text-dim); }
+  .items li { padding: 2px 0; padding-left: 18px; position: relative; }
+  .items li::before { content: "–"; position: absolute; left: 2px; }
+  .items li.did { color: var(--text); text-decoration: line-through; text-decoration-color: var(--border); }
+
+  details.phase {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px;
+  }
+  details.phase + details.phase { margin-top: 10px; }
+  details.phase summary {
+    cursor: pointer; font-family: "Fraunces", serif; font-weight: 600; font-size: 15px;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  }
+  details.phase summary .when { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--text-dim); font-weight: 400; }
+  .phase-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .phase-list li {
+    display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px;
+    padding: 6px 8px; border-radius: 6px; background: var(--upcoming-bg);
+  }
+  .phase-list li .d { color: var(--text-dim); font-family: "IBM Plex Mono", monospace; font-size: 11px; white-space: nowrap; }
+
+  .qtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .qtable th, .qtable td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .qtable th { color: var(--text-dim); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  .qtable td.q { color: var(--text); }
+  .qtable td.def { color: var(--text-dim); }
+
+  footer { margin-top: 40px; color: var(--text-dim); font-size: 12px; border-top: 1px solid var(--border); padding-top: 14px; }
+  a { color: var(--accent); }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<header>
+  <div class="eyebrow">Monad Metropolis · Hackathon</div>
+  <h1>Grounded — build tree</h1>
+  <p>Payment-grounded reputation for ERC-8004 agents. Snapshot as of <strong>22 Sep 2026</strong>. Source: <code>docs/TASKS.md</code>. Ask Claude to refresh this page as work lands.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="n">3 / 12</div><div class="l">build days done</div></div>
+  <div class="stat"><div class="n">2</div><div class="l">PRs merged (#1, #2)</div></div>
+  <div class="stat"><div class="n">0 / 3</div><div class="l">contracts on testnet</div></div>
+  <div class="stat"><div class="n">cleared</div><div class="l">passkey kill switch</div></div>
+</div>
+
+<section>
+  <h2>Phase 1 — Build (17–28 Sep)</h2>
+  <div class="tree">
+
+    <div class="node done">
+      <div class="card">
+        <div class="row"><span class="day">Day 1 · 17 Sep</span><span class="badge done">done</span></div>
+        <h3>Foundations</h3>
+        <ul class="items">
+          <li class="did">A1: ERC-8004 confirmed live on Monad testnet, ABIs selector-verified</li>
+          <li class="did">Monorepo + Foundry scaffold, CI (forge test, fmt, gitleaks)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node done">
+      <div class="card">
+        <div class="row"><span class="day">Day 2 · 18 Sep</span><span class="badge done">done</span></div>
+        <h3>Receipts</h3>
+        <ul class="items">
+          <li class="did"><code>ReceiptRegistry</code> + <code>ReceiptRouter</code> (pay, payWithAuthorization)</li>
+          <li class="did">Fork test pays live agent 1 with EIP-3009 USDC</li>
+          <li class="did">PR #1 merged <code>6d791f9</code> — Copilot fix: router-as-recipient fund lock</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node done">
+      <div class="card">
+        <div class="row"><span class="day">Day 3 · 21 Sep</span><span class="badge done">done</span></div>
+        <h3>Passkeys onchain</h3>
+        <ul class="items">
+          <li class="did"><code>GroundedWebAuthn</code> + <code>ReviewerRegistry.bind</code>, 30 tests</li>
+          <li class="did"><strong>Kill switch cleared</strong>: live P256 precompile, bind ~158k gas</li>
+          <li class="did">PR #2 merged <code>7b545b5</code> — Copilot fixed 2 test findings</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node now">
+      <div class="card">
+        <div class="row"><span class="day">Day 4 · overdue</span><span class="badge now">in progress</span></div>
+        <h3>Scoring core — critical path</h3>
+        <ul class="items">
+          <li><code>ScoringLib</code>: 21-bucket histogram, log2 weight cap 4, weighted median</li>
+          <li><code>adapters/Erc8004Adapter.sol</code>: valueDecimals==0, value in [0,100], tag1=="quality"</li>
+          <li><code>GroundedReputation.ground / scoreOf / meets</code>, full check order</li>
+          <li><code>sweepRevoked(agentId, reviewer)</code> — needs <code>Live.feedbackIndex</code> settled first</li>
+          <li>Fuzz <code>ScoringLib</code> vs reference sort; end-to-end forge test</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node overdue">
+      <div class="card">
+        <div class="row"><span class="day">Day 5 · overdue</span><span class="badge overdue">tonight</span></div>
+        <h3>Deploy + checkpoint</h3>
+        <ul class="items">
+          <li class="did">Vercel placeholder page pushed — reserves domain for rpId</li>
+          <li>Waiting on user: deployer address + testnet MON + exact domain</li>
+          <li><code>Deploy.s.sol</code> → <code>ReceiptRegistry</code>, <code>ReceiptRouter</code>, <code>ReviewerRegistry</code> to Monad testnet</li>
+          <li>Write <code>deployments/10143.json</code>; verify sources</li>
+          <li>Checkpoint unmeasured: <code>ground</code> gas ≤ ~250k (blocked — <code>ground</code> not built)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node upcoming">
+      <div class="card">
+        <div class="row"><span class="day">Day 6 · 22 Sep</span><span class="badge upcoming">upcoming</span></div>
+        <h3>SDK read path + placeholder submission</h3>
+        <ul class="items">
+          <li>Submit placeholder entry; invite <code>metropolis@hackathon.monad.xyz</code></li>
+          <li><code>packages/sdk</code>: <code>score()</code>, <code>check()</code>, raw score via <code>getSummary</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node upcoming">
+      <div class="card">
+        <div class="row"><span class="day">Day 7 · 23 Sep</span><span class="badge upcoming">upcoming</span></div>
+        <h3>SDK write path</h3>
+        <ul class="items">
+          <li><code>bindPasskey()</code>, <code>pay()</code>, <code>rate()</code>, gas × 1.15, headless authenticator</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node upcoming">
+      <div class="card">
+        <div class="row"><span class="day">Day 8 · 24 Sep</span><span class="badge upcoming">upcoming</span></div>
+        <h3>402 flow</h3>
+        <ul class="items">
+          <li><code>groundedPaywall()</code> middleware, <code>withTrust(fetch)</code></li>
+          <li><code>apps/demo-seller</code> + <code>apps/demo-buyer</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node upcoming">
+      <div class="card">
+        <div class="row"><span class="day">Day 9 · 25 Sep</span><span class="badge upcoming">upcoming</span></div>
+        <h3>Indexer + seed data</h3>
+        <ul class="items">
+          <li>Envio HyperIndex on <code>ReceiptIssued</code>/<code>ReviewerBound</code>/<code>Grounded</code>/ERC-8004 events</li>
+          <li>Seed: sybil spam, honest payers, one rejected wash-rating</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node upcoming">
+      <div class="card">
+        <div class="row"><span class="day">Day 10 · 26 Sep</span><span class="badge upcoming">upcoming</span></div>
+        <h3>Explorer + playground</h3>
+        <ul class="items">
+          <li><code>apps/web</code>: agent list/page (raw vs grounded), reviewer page</li>
+          <li>Playground: login → drip → bind passkey → pay → rate → score moves</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node upcoming">
+      <div class="card">
+        <div class="row"><span class="day">Day 11 · 27 Sep</span><span class="badge upcoming">upcoming</span></div>
+        <h3>Docs + extras</h3>
+        <ul class="items">
+          <li>Fumadocs: quickstart, SDK ref, scoring spec, threat model, FAQ</li>
+          <li><code>GroundedGate.sol</code> (onlyTrusted)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="node upcoming">
+      <div class="card">
+        <div class="row"><span class="day">Day 12 · 28 Sep</span><span class="badge upcoming">upcoming</span></div>
+        <h3>Freeze</h3>
+        <ul class="items">
+          <li>Fresh-clone e2e; tag <code>v0.1.0</code>; production deploys</li>
+          <li><strong>Feature freeze</strong> at end of day</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>Later phases</h2>
+  <details class="phase">
+    <summary><span>Phase 2 — Test week</span><span class="when">29 Sep – 5 Oct</span></summary>
+    <ul class="phase-list">
+      <li><span>Contract hardening — coverage ≥90%, Slither, Aderyn</span><span class="d">29 Sep</span></li>
+      <li><span>Security — gitleaks history, key rotation, rate limits</span><span class="d">30 Sep</span></li>
+      <li><span>Passkey device matrix (Win Hello, Touch ID, Android, 1Password)</span><span class="d">1 Oct</span></li>
+      <li><span>Integrator day — pair, fix friction live</span><span class="d">2 Oct</span></li>
+      <li><span>Adversarial tests T1–T12 (wash rating, replay, revoke…)</span><span class="d">3 Oct</span></li>
+      <li><span>Docs test — 2 outsiders run quickstart cold</span><span class="d">4 Oct</span></li>
+      <li><span>Bug bash, <code>v0.1.x</code> — integrator live, real rpId deployed</span><span class="d">5 Oct</span></li>
+    </ul>
+  </details>
+  <details class="phase">
+    <summary><span>Phase 3 — Ship week</span><span class="when">6 – 12 Oct</span></summary>
+    <ul class="phase-list">
+      <li><span>Demo + pitch video scripts</span><span class="d">6 Oct</span></li>
+      <li><span>Record demo video on production URLs</span><span class="d">7 Oct</span></li>
+      <li><span>Record pitch video</span><span class="d">8 Oct</span></li>
+      <li><span>Judge access doc — 5-minute judge path</span><span class="d">9 Oct</span></li>
+      <li><span>Integration evidence, post-event plan</span><span class="d">10 Oct</span></li>
+      <li><span>Final secrets audit, proofread, link check</span><span class="d">11 Oct</span></li>
+      <li><span><strong>Submit final</strong></span><span class="d">12 Oct</span></li>
+    </ul>
+  </details>
+</section>
+
+<section>
+  <h2>Open questions</h2>
+  <table class="qtable">
+    <tr><th>#</th><th>Question</th><th>Default if silent</th></tr>
+    <tr><td class="mono">1</td><td class="q">Exact Vercel/domain host for rpId</td><td class="def">blocks deploy</td></tr>
+    <tr><td class="mono">3</td><td class="q">Team: solo or owners per workstream</td><td class="def">assume solo</td></tr>
+    <tr><td class="mono">6</td><td class="q">Privy: custody drip wallet, or drop?</td><td class="def">drop</td></tr>
+    <tr><td class="mono">7</td><td class="q">Which 06 integrations get cut for time?</td><td class="def">cut KIMI/Qwen + Alchemy</td></tr>
+    <tr><td class="mono">8</td><td class="q">Chainlink CRE: keep as sweepRevoked scheduler?</td><td class="def">remove unless time left</td></tr>
+    <tr><td class="mono">9</td><td class="q">Deployer address + testnet MON</td><td class="def">blocks deploy</td></tr>
+  </table>
+</section>
+
+<footer>
+  Full detail: <code>docs/TASKS.md</code> · project rules: <code>CLAUDE.md</code> (local, not in git). This page is static — re-published by hand as stages close, not live-synced to the repo.
+</footer>
