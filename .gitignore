@@ -23,8 +23,12 @@ dist/
 # Foundry
 contracts/out/
 contracts/cache/
-contracts/broadcast/*/31337/
-contracts/broadcast/**/dry-run/
+contracts/foundry-pp/
+contracts/broadcast/
+# Local anvil-fork deployments reuse chainId 10143 and would masquerade as the real
+# testnet deploy. The real one is committed deliberately, not by an untracked drop.
+deployments/*.json
+!deployments/README.md
 
 # Envio indexer
 indexer/generated/

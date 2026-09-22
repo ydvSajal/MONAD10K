@@ -30,3 +30,21 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # SDK tests that need a deployment are skipped without GROUNDED_TEST_RPC,
+      # so CI stays offline and deterministic (same rule as the Foundry fork tests).
+      - run: pnpm -r typecheck
+      - run: pnpm -r test
+      - run: pnpm -r build
