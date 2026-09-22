@@ -3,6 +3,7 @@ pragma solidity ^0.8.28;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IIdentityRegistry} from "../../src/interfaces/IIdentityRegistry.sol";
+import {IReputationRegistry} from "../../src/interfaces/IReputationRegistry.sol";
 
 contract MockERC20 is ERC20 {
     uint8 private immutable _decimals;
@@ -75,5 +76,53 @@ contract MockIdentityRegistry is IIdentityRegistry {
     function getAgentWallet(uint256 agentId) external view returns (address) {
         address w = wallets[agentId];
         return w == address(0) ? owners[agentId] : w;
+    }
+
+    function setApproved(uint256 agentId, address who) external {
+        approvals[agentId] = who;
+    }
+
+    function setApprovalForAll(address owner_, address operator, bool ok) external {
+        operators[owner_][operator] = ok;
+    }
+}
+
+/// @notice ERC-8004 Reputation Registry stand-in, shaped from the deployed ABI (18 Sep).
+/// @dev Feedback is written directly by the reviewer in the real system, so the mock lets any
+///      caller seed an entry at an explicit index.
+contract MockReputationRegistry is IReputationRegistry {
+    struct Feedback {
+        int128 value;
+        uint8 valueDecimals;
+        string tag1;
+        string tag2;
+        bool isRevoked;
+    }
+
+    mapping(uint256 => mapping(address => mapping(uint64 => Feedback))) private _feedback;
+    mapping(uint256 => mapping(address => uint64)) public lastIndex;
+
+    function setFeedback(uint256 agentId, address client, uint64 index, int128 value, uint8 decimals, string memory tag)
+        external
+    {
+        _feedback[agentId][client][index] = Feedback(value, decimals, tag, "", false);
+        if (index > lastIndex[agentId][client]) lastIndex[agentId][client] = index;
+    }
+
+    function revokeFeedback(uint256 agentId, address client, uint64 index) external {
+        _feedback[agentId][client][index].isRevoked = true;
+    }
+
+    function readFeedback(uint256 agentId, address client, uint64 index)
+        external
+        view
+        returns (int128, uint8, string memory, string memory, bool)
+    {
+        Feedback memory f = _feedback[agentId][client][index];
+        return (f.value, f.valueDecimals, f.tag1, f.tag2, f.isRevoked);
+    }
+
+    function getLastIndex(uint256 agentId, address client) external view returns (uint64) {
+        return lastIndex[agentId][client];
     }
 }
