@@ -155,14 +155,14 @@
 <header>
   <div class="eyebrow">Monad Metropolis · Hackathon</div>
   <h1>Grounded — build tree</h1>
-  <p>Payment-grounded reputation for ERC-8004 agents. Snapshot as of <strong>22 Sep 2026</strong>. Source: <code>docs/TASKS.md</code>. Ask Claude to refresh this page as work lands.</p>
+  <p>Payment-grounded reputation for ERC-8004 agents. Snapshot as of <strong>23 Sep 2026</strong>. Source: <code>docs/TASKS.md</code>. Ask Claude to refresh this page as work lands.</p>
 </header>
 
 <div class="stats">
-  <div class="stat"><div class="n">3 / 12</div><div class="l">build days done</div></div>
-  <div class="stat"><div class="n">2</div><div class="l">PRs merged (#1, #2)</div></div>
-  <div class="stat"><div class="n">0 / 3</div><div class="l">contracts on testnet</div></div>
-  <div class="stat"><div class="n">cleared</div><div class="l">passkey kill switch</div></div>
+  <div class="stat"><div class="n">5 / 12</div><div class="l">build days done</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">PRs merged (#1–#4)</div></div>
+  <div class="stat"><div class="n">65</div><div class="l">tests passing (58 Solidity, 7 SDK)</div></div>
+  <div class="stat"><div class="n">3 / 11</div><div class="l">scope items done — the contracts</div></div>
 </div>
 
 <section>
@@ -204,48 +204,53 @@
       </div>
     </div>
 
+    <div class="node done">
+      <div class="card">
+        <div class="row"><span class="day">Day 4 · 23 Sep</span><span class="badge done">done</span></div>
+        <h3>Scoring core</h3>
+        <ul class="items">
+          <li class="did"><code>ScoringLib</code>: 21-bucket histogram, log2 weight cap 4, weighted median (fuzzed vs reference)</li>
+          <li class="did"><code>Erc8004Adapter</code>: valueDecimals==0, value 0..100, quality/dispute tags</li>
+          <li class="did"><code>GroundedReputation</code>: ground, scoreOf, meets, full check order, storage layout settled</li>
+          <li class="did"><code>sweepRevoked</code> — permissionless removal of revoked feedback</li>
+          <li class="did">Fork test vs <strong>live</strong> registries; found feedback indices are 1-based</li>
+          <li class="did">PR #3 merged <code>8cdec18</code></li>
+          <li><code>ground</code> gas 353k vs 250k target — deferred, all 4 exclusion checks kept</li>
+        </ul>
+      </div>
+    </div>
+
     <div class="node now">
       <div class="card">
-        <div class="row"><span class="day">Day 4 · overdue</span><span class="badge now">in progress</span></div>
-        <h3>Scoring core — critical path</h3>
-        <ul class="items">
-          <li><code>ScoringLib</code>: 21-bucket histogram, log2 weight cap 4, weighted median</li>
-          <li><code>adapters/Erc8004Adapter.sol</code>: valueDecimals==0, value in [0,100], tag1=="quality"</li>
-          <li><code>GroundedReputation.ground / scoreOf / meets</code>, full check order</li>
-          <li><code>sweepRevoked(agentId, reviewer)</code> — needs <code>Live.feedbackIndex</code> settled first</li>
-          <li>Fuzz <code>ScoringLib</code> vs reference sort; end-to-end forge test</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="node overdue">
-      <div class="card">
-        <div class="row"><span class="day">Day 5 · overdue</span><span class="badge overdue">tonight</span></div>
+        <div class="row"><span class="day">Day 5 · deferred</span><span class="badge now">script ready</span></div>
         <h3>Deploy + checkpoint</h3>
         <ul class="items">
-          <li class="did">Vercel placeholder page pushed — reserves domain for rpId</li>
-          <li>Waiting on user: deployer address + testnet MON + exact domain</li>
-          <li><code>Deploy.s.sol</code> → <code>ReceiptRegistry</code>, <code>ReceiptRouter</code>, <code>ReviewerRegistry</code> to Monad testnet</li>
-          <li>Write <code>deployments/10143.json</code>; verify sources</li>
-          <li>Checkpoint unmeasured: <code>ground</code> gas ≤ ~250k (blocked — <code>ground</code> not built)</li>
+          <li class="did">Vercel live at <code>monad-10-k.vercel.app</code>; <code>grounded.sajal.sbs</code> attached (DNS pending)</li>
+          <li class="did"><code>Deploy.s.sol</code>: 4 contracts, one broadcast, CREATE predictions asserted</li>
+          <li class="did">Rehearsed on an anvil fork of 10143 — predictions held</li>
+          <li>Testnet deploy deferred by choice: finish code first. Hard limit ~1 Oct (indexer, integrators)</li>
+          <li>Invariant tests: histogram mass == live weights, receipt consumed once</li>
         </ul>
       </div>
     </div>
 
-    <div class="node upcoming">
+    <div class="node done">
       <div class="card">
-        <div class="row"><span class="day">Day 6 · 22 Sep</span><span class="badge upcoming">upcoming</span></div>
+        <div class="row"><span class="day">Day 6 · 23 Sep</span><span class="badge done">read path done</span></div>
         <h3>SDK read path + placeholder submission</h3>
         <ul class="items">
-          <li>Submit placeholder entry; invite <code>metropolis@hackathon.monad.xyz</code></li>
-          <li><code>packages/sdk</code>: <code>score()</code>, <code>check()</code>, raw score via <code>getSummary</code></li>
+          <li class="did"><code>@grounded/sdk</code>: <code>score</code>, <code>check</code>, <code>assertTrusted</code>, <code>payoutWallet</code>, raw score</li>
+          <li class="did">CI gains a TypeScript job (typecheck, test, build)</li>
+          <li class="did">PR #4 merged <code>6f0dfc6</code></li>
+          <li class="did">Submission copy + outreach list written (<code>docs/SUBMISSION.md</code>, <code>docs/OUTREACH.md</code>)</li>
+          <li>Submit the placeholder entry — text is ready, needs you</li>
         </ul>
       </div>
     </div>
 
     <div class="node upcoming">
       <div class="card">
-        <div class="row"><span class="day">Day 7 · 23 Sep</span><span class="badge upcoming">upcoming</span></div>
+        <div class="row"><span class="day">Day 7 · next session</span><span class="badge upcoming">next</span></div>
         <h3>SDK write path</h3>
         <ul class="items">
           <li><code>bindPasskey()</code>, <code>pay()</code>, <code>rate()</code>, gas × 1.15, headless authenticator</li>
@@ -343,12 +348,14 @@
   <h2>Open questions</h2>
   <table class="qtable">
     <tr><th>#</th><th>Question</th><th>Default if silent</th></tr>
-    <tr><td class="mono">1</td><td class="q">Exact Vercel/domain host for rpId</td><td class="def">blocks deploy</td></tr>
-    <tr><td class="mono">3</td><td class="q">Team: solo or owners per workstream</td><td class="def">assume solo</td></tr>
+    <tr><td class="mono">A</td><td class="q">12 of 21 agent owners have no payout wallet — fail clearly, or pay <code>ownerOf</code>?</td><td class="def">fail clearly</td></tr>
+    <tr><td class="mono">B</td><td class="q">Should rotating to a new passkey require the old one?</td><td class="def">yes (small change, before deploy)</td></tr>
+    <tr><td class="mono">C</td><td class="q"><code>ground</code> gas 353k vs 250k target</td><td class="def">deferred — all checks kept</td></tr>
+    <tr><td class="mono">D</td><td class="q">Keep <code>grounded.sajal.sbs</code> as rpId despite <code>.sbs</code> filtering risk?</td><td class="def">keep</td></tr>
+    <tr><td class="mono">E</td><td class="q">Deployer address + testnet MON</td><td class="def">needed by ~1 Oct</td></tr>
     <tr><td class="mono">6</td><td class="q">Privy: custody drip wallet, or drop?</td><td class="def">drop</td></tr>
     <tr><td class="mono">7</td><td class="q">Which 06 integrations get cut for time?</td><td class="def">cut KIMI/Qwen + Alchemy</td></tr>
     <tr><td class="mono">8</td><td class="q">Chainlink CRE: keep as sweepRevoked scheduler?</td><td class="def">remove unless time left</td></tr>
-    <tr><td class="mono">9</td><td class="q">Deployer address + testnet MON</td><td class="def">blocks deploy</td></tr>
   </table>
 </section>
 
