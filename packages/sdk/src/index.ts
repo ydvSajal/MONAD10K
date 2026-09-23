@@ -21,6 +21,7 @@ export type {
   GroundedConfig,
   PayArgs,
   PayMode,
+  PayOptions,
   PayResult,
   RateArgs,
   RateResult,
@@ -28,3 +29,4 @@ export type {
   ScoreResult,
   TrustPolicy,
 } from "./types.js";
+export type { Offer, PaymentRequired } from "./x402.js";

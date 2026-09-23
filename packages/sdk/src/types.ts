@@ -86,6 +86,18 @@ export interface PayArgs {
   mode?: PayMode;
 }
 
+/** How `withTrust` pays. The seller names the price, so the buyer names a ceiling. */
+export interface PayOptions {
+  /** Most the buyer will pay per request, as a decimal in token units, e.g. "0.10". Required. */
+  maxAmount: string;
+  mode?: PayMode;
+}
+
+export const payOptionsSchema = z.object({
+  maxAmount: z.string().regex(/^\d+(\.\d+)?$/, "maxAmount must be a plain decimal string like 0.10"),
+  mode: z.enum(["transfer", "authorization"]).default("transfer"),
+});
+
 export interface PayResult {
   receiptId: bigint;
   txHash: Hex;

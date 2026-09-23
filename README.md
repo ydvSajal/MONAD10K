@@ -180,8 +180,12 @@ Off chain we hold exactly one key: a **testnet drip wallet** that hands out MON/
 |---|---|
 | `ReceiptRegistry`, `ReceiptRouter` | Built, merged |
 | `ReviewerRegistry`, `GroundedWebAuthn` | Built, merged — passkeys verify through the live precompile |
-| `ScoringLib`, `Erc8004Adapter`, `GroundedReputation`, `sweepRevoked` | Built, in review |
-| Testnet deploy, `deployments/10143.json` | Next |
-| SDK, 402 paywall, indexer, explorer, docs | Planned — see `docs/TASKS.md` |
+| `ScoringLib`, `Erc8004Adapter`, `GroundedReputation`, `sweepRevoked` | Built, merged |
+| `GroundedGate` (`onlyTrusted`) + example | Built |
+| `Deploy.s.sol` | Built, rehearsed on an anvil fork of 10143 |
+| `@grounded/sdk`: `score`, `check`, `pay`, `bindPasskey`, `rate`, `withTrust` | Built, fork-tested against the live ERC-8004 registries |
+| `@grounded/sdk/server`: `groundedPaywall` (402 scheme `grounded-router`) | Built, fork-tested end to end |
+| Testnet deploy, `deployments/10143.json` | Waiting on a funded deployer key |
+| Demo seller/buyer, indexer, explorer, docs | Planned — see `docs/TASKS.md` |
 
 Contracts are **unaudited and testnet-only**. Do not put real money behind them.

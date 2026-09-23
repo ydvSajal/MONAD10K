@@ -63,9 +63,9 @@ Legend: `[x]` done · `[ ]` open · `[!]` overdue or blocked · `[~]` partly don
 |---|---|---|---|
 | 17 Sep | ERC-8004 deployed? | [x] Yes | — |
 | 21 Sep | WebAuthn fork test passing? | [x] Yes | — |
-| 21 Sep | `ground` gas ≤ ~250k? | [!] Not measured, `ground` not built | Cheaper feedback checks; OZ path only for `clientDataJSON`; re-measure |
+| 21 Sep | `ground` gas ≤ ~250k? | [!] 353k measured; 110k is ERC-8004 proxy reads. Deferred by user (23 Sep) | Cheaper feedback checks; re-measure |
 | 22 Sep | Placeholder submission in; repo public; invite `metropolis@hackathon.monad.xyz` | [ ] Tomorrow | — |
-| 24 Sep | 402 loop working? Also ≥2 teams said "yes, will try it" | [ ] | Demo uses `pay()` + `rate()` with no paywall |
+| 24 Sep | 402 loop working? Also ≥2 teams said "yes, will try it" | [x] loop (fork test) · [ ] teams | Demo uses `pay()` + `rate()` with no paywall |
 | 25 Sep | Envio indexer up? Also pick KIMI vs Qwen (06) | [ ] | Explorer reads `scoreOf` onchain + viem poller into Neon |
 | 28 Sep | Feature freeze. Integrator has SDK installed? | [ ] | Offer to write the integration PR for them |
 | 5 Oct | Integrator live; no P0/P1 open | [ ] | Best "in progress" evidence + a named second team. Don't fake it |
@@ -138,7 +138,7 @@ The dates are the plan's. Dates before today are already slipped, so treat the o
 
 ## 9. Risks to watch
 
-- **Behind schedule.** ~2 build days late, and the scoring core (the product's heart) doesn't exist yet. Days 6–9 (SDK, 402, indexer) all depend on the `GroundedReputation` ABI, so Day 4 is the next bottleneck. If Day 4 slips past 23 Sep, invoke the timeline's fallbacks rather than drift (rule 9).
+- **Not deployed.** Contracts, SDK and 402 are built and fork-tested, but nothing is on testnet. Envio (25 Sep) and the explorer need real addresses; the deploy is blocked on a funded deployer key.
 - **rpId** decides whether the hosted playground can use passkeys at all. Wrong value means a redeploy and lost bindings.
 - **Tomorrow is the placeholder submission.** Repo is already public per CLAUDE.md, but the entry itself is not submitted.
 - **No GTM record.** The 24 Sep "2 teams said yes" and 28 Sep "one has the SDK" gates need outreach to have started.
