@@ -101,11 +101,18 @@ export const payArgsSchema = z.object({
   mode: z.enum(["transfer", "authorization"]).default("transfer"),
 });
 
-export const ratingSchema = z.object({
+/**
+ * Capped at a day. The deadline is encoded as uint40 only after the feedback is posted, so an
+ * out-of-range value must fail here, before anything public happens.
+ */
+export const deadlineSchema = z.object({
+  deadlineSec: z.number().int().positive().max(86_400).default(600),
+});
+
+export const ratingSchema = deadlineSchema.extend({
   receiptId: z.coerce.bigint().positive(),
   score: z.number().int().min(0).max(100),
   tag: z.enum(["quality", "dispute"]).default("quality"),
-  deadlineSec: z.number().int().positive().default(600),
 });
 
 export interface RateArgs {

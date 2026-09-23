@@ -38,6 +38,7 @@ import {
 } from "./errors.js";
 import {
   agentIdSchema,
+  deadlineSchema,
   payArgsSchema,
   ratingSchema,
   trustPolicySchema,
@@ -61,11 +62,6 @@ const TAG_QUALITY = "quality";
 const GAS_HEADROOM_PCT = 115n;
 /** How long an EIP-3009 payment authorization stays valid. */
 const AUTHORIZATION_TTL_SEC = 3600n;
-/**
- * `ground` checks deadline, receipt, payer and exclusions before it reads the feedback (TRD §2.5).
- * A preflight that reverts with one of these would fail for real too.
- */
-const PRE_FEEDBACK_ERRORS = new Set(["Expired", "BadReceipt", "NotPayer", "ExcludedReviewer"]);
 const EMPTY_SIG: WebAuthnSig = {
   authenticatorData: "0x",
   clientDataJSON: "",
@@ -224,6 +220,9 @@ export class Grounded {
     // The router reverts NoAgentWallet too, but only after an approve would have been spent.
     const to = await this.payoutWallet(agentId);
     if (!to) throw new AgentNotPayableError(agentId);
+    if (isAddressEqual(to, router)) {
+      throw new GroundedError(`agent ${agentId}'s payout wallet is the router itself; the router refuses to pay it`);
+    }
 
     const decimals = await this.publicClient.readContract({
       address: token,
@@ -333,7 +332,7 @@ export class Grounded {
       throw new GroundedError(`receipt ${receiptId} was paid by ${r.payer}; only the payer can rate with it`);
     }
     await this.requirePasskey(account.address, authenticator);
-    await this.preflightGround(receiptId, account.address);
+    await this.preflightGround(receiptId, r.agentId, account.address);
 
     const reputation = this.address("erc8004Reputation");
     const feedback = await this.send(reputation, erc8004ReputationAbi, "giveFeedback", [
@@ -371,7 +370,8 @@ export class Grounded {
     authenticator: Authenticator;
     deadlineSec?: number;
   }): Promise<Hex> {
-    const { receiptId, feedbackIndex, authenticator, deadlineSec = 600 } = args;
+    const { receiptId, feedbackIndex, authenticator } = args;
+    const { deadlineSec } = deadlineSchema.parse(args);
     const grounded = this.address("groundedReputation");
     const { account } = this.signer();
 
@@ -436,24 +436,32 @@ export class Grounded {
   }
 
   /**
-   * Run `ground` as an eth_call before any feedback is posted. With no feedback yet it must revert;
-   * the question is only whether it gets past the checks that come before the feedback read.
+   * Run `ground` as an eth_call before any feedback is posted. `ground` checks deadline, receipt,
+   * payer and exclusions before it reads the feedback (TRD §2.5), so with no feedback yet the only
+   * acceptable outcome is failing at that read. Anything else, including a revert from a registry
+   * underneath, would sink the real call too, so it stops us before the feedback exists.
    */
-  private async preflightGround(receiptId: bigint, reviewer: Address): Promise<void> {
-    const now = (await this.publicClient.getBlock()).timestamp;
+  private async preflightGround(receiptId: bigint, agentId: bigint, reviewer: Address): Promise<void> {
+    const [block, last] = await Promise.all([
+      this.publicClient.getBlock(),
+      this.publicClient.readContract({
+        address: this.address("erc8004Reputation"),
+        abi: erc8004ReputationAbi,
+        functionName: "getLastIndex",
+        args: [agentId, reviewer],
+      }),
+    ]);
     try {
       await this.publicClient.simulateContract({
         address: this.address("groundedReputation"),
         abi: groundedReputationAbi,
         functionName: "ground",
-        // Index 0 never exists (ERC-8004 indices are 1-based), so a clean run ends at BadFeedback.
-        args: [receiptId, 0n, Number(now) + 60, EMPTY_SIG],
+        // The index the next feedback will get, so the run reaches the feedback read and stops there.
+        args: [receiptId, last + 1n, Number(block.timestamp) + 60, EMPTY_SIG],
         account: reviewer,
       });
     } catch (e) {
-      const revert = revertOf(e);
-      if (!revert) throw e;
-      if (revert.data && PRE_FEEDBACK_ERRORS.has(revert.data.errorName)) throw decodeRevert(e);
+      if (!isFeedbackNotYetPosted(revertOf(e)?.data)) throw decodeRevert(e);
     }
   }
 
@@ -491,6 +499,18 @@ function revertOf(e: unknown): ContractFunctionRevertedError | undefined {
   if (!(e instanceof BaseError)) return undefined;
   const found = e.walk((x) => x instanceof ContractFunctionRevertedError);
   return found instanceof ContractFunctionRevertedError ? found : undefined;
+}
+
+/**
+ * How the preflight's feedback read may fail when every earlier check passed. The live registry
+ * reverts on an index that does not exist yet rather than returning an empty entry, so that exact
+ * reason is accepted too. Matching is by exact string on purpose: if a registry upgrade changes
+ * it, `rate` refuses to post instead of guessing, which is the safe direction.
+ */
+function isFeedbackNotYetPosted(data: ContractFunctionRevertedError["data"]): boolean {
+  if (!data) return false;
+  if (data.errorName === "BadFeedback") return true;
+  return data.errorName === "Error" && data.args?.[0] === "index out of bounds";
 }
 
 /** Turn a viem revert into the SDK's typed error when the custom error is one we know. */

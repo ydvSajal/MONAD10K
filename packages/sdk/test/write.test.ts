@@ -72,6 +72,8 @@ describe("write path (no network)", () => {
     await expect(g.rate({ receiptId: 1n, score: 101, authenticator: auth })).rejects.toThrow();
     await expect(g.rate({ receiptId: 1n, score: 79.5, authenticator: auth })).rejects.toThrow();
     await expect(g.rate({ receiptId: 0n, score: 80, authenticator: auth })).rejects.toThrow();
+    // Must fail before any feedback is posted, not when the uint40 deadline is encoded afterwards.
+    await expect(g.rate({ receiptId: 1n, score: 80, authenticator: auth, deadlineSec: 2 ** 41 })).rejects.toThrow();
   });
 
   it("validates payments at the boundary", async () => {
