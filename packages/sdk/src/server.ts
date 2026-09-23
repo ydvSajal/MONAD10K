@@ -2,7 +2,7 @@ import { erc20Abi, isAddressEqual, parseUnits } from "viem";
 
 import { receiptRegistryAbi, ReceiptStatus } from "./abi.js";
 import type { Grounded } from "./grounded.js";
-import { agentIdSchema } from "./types.js";
+import { agentIdSchema, amountSchema } from "./types.js";
 import {
   ACCESS_MAX_AGE_SEC,
   accessTypedData,
@@ -54,6 +54,8 @@ export interface PaywallContext {
 export function groundedPaywall(opts: PaywallOptions) {
   const { grounded } = opts;
   const agentId = agentIdSchema.parse(opts.agentId);
+  // A price under the router's floor would take the buyer's approval and then revert every time.
+  const price = amountSchema.parse(opts.price);
   const usdc = grounded.address("usdc");
   const registry = grounded.address("receiptRegistry");
 
@@ -63,7 +65,12 @@ export function groundedPaywall(opts: PaywallOptions) {
     (chain ??= Promise.all([
       grounded.publicClient.getChainId(),
       grounded.publicClient.readContract({ address: usdc, abi: erc20Abi, functionName: "decimals" }),
-    ]).then(([chainId, decimals]) => ({ chainId, amount: parseUnits(opts.price, decimals) })));
+    ])
+      .then(([chainId, decimals]) => ({ chainId, amount: parseUnits(price, decimals) }))
+      .catch((e) => {
+        chain = undefined; // a flaky RPC on the first request must not break every later one
+        throw e;
+      }));
 
   const paymentRequired = async (error?: string) => {
     const { chainId, amount } = await chainInfo();

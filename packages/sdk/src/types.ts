@@ -103,12 +103,15 @@ export interface PayResult {
   txHash: Hex;
 }
 
+/** Decimal token units, at or above the router's 0.01 floor (`MIN_AMOUNT_6DP`). */
+export const amountSchema = z
+  .string()
+  .regex(/^\d+(\.\d+)?$/, "amount must be a plain decimal string like 0.05")
+  .refine((a) => Number(a) >= 0.01, "amount must be at least 0.01, the router's floor");
+
 export const payArgsSchema = z.object({
   agentId: agentIdSchema,
-  amount: z
-    .string()
-    .regex(/^\d+(\.\d+)?$/, "amount must be a plain decimal string like 0.05")
-    .refine((a) => Number(a) >= 0.01, "amount must be at least 0.01"),
+  amount: amountSchema,
   token: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
   mode: z.enum(["transfer", "authorization"]).default("transfer"),
 });

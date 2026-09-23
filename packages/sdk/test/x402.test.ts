@@ -88,7 +88,58 @@ describe("groundedPaywall", () => {
   });
 });
 
+describe("groundedPaywall config", () => {
+  it("refuses a price under the router's floor at construction, not after buyers pay", () => {
+    expect(() =>
+      groundedPaywall({ grounded: client(), agentId: 7n, price: "0.001", store: memoryReceiptStore() }),
+    ).toThrow(/router's floor/);
+  });
+
+  it("recovers from an RPC failure on the first request", async () => {
+    let calls = 0;
+    const flaky = {
+      getChainId: async () => {
+        if (calls++ === 0) throw new Error("rpc down");
+        return 10143;
+      },
+      readContract: async () => 6,
+    } as unknown as PublicClient;
+    const grounded = new Grounded({ chain: "monad-testnet", publicClient: flaky, addresses });
+    const mw = groundedPaywall({ grounded, agentId: 7n, price: "0.05", store: memoryReceiptStore() });
+    const run = () => mw({ req: { raw: new Request("https://seller.test/") } }, async () => {});
+
+    await expect(run()).rejects.toThrow("rpc down");
+    expect((await run())?.status).toBe(402);
+  });
+});
+
 describe("withTrust", () => {
+  it("retries a one-shot streamed body intact after paying", async () => {
+    const g = client(true);
+    vi.spyOn(g, "score").mockResolvedValue(unrated);
+    vi.spyOn(g as never, "payValue").mockResolvedValue({ receiptId: 1n, txHash: "0x" } as never);
+    const offer = await (await paywall()(new Request("https://seller.test/summarise"))).json();
+    const seen: string[] = [];
+    const f = g.withTrust(
+      async (i) => {
+        const req = i as Request;
+        seen.push(await req.text());
+        return req.headers.has(RECEIPT_HEADER) ? new Response("ok") : Response.json(offer, { status: 402 });
+      },
+      { minScore: 0, minReviewers: 0, maxAmount: "1" },
+    );
+    const body = new ReadableStream({
+      start(c) {
+        c.enqueue(new TextEncoder().encode("summarise this"));
+        c.close();
+      },
+    });
+
+    const res = await f("https://seller.test/summarise", { method: "POST", body, duplex: "half" } as RequestInit);
+    expect(await res.text()).toBe("ok");
+    expect(seen).toEqual(["summarise this", "summarise this"]);
+  });
+
   it("returns any non-402 response untouched and never pays", async () => {
     const g = client(true);
     const pay = vi.spyOn(g, "pay");

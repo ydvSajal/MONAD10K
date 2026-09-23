@@ -231,9 +231,11 @@ export class Grounded {
     const { maxAmount, mode } = payOptionsSchema.parse(options);
     trustPolicySchema.parse(options); // fail at wrap time, not on the first 402
     return async (input, init) => {
-      // A Request body can be read once; keep a copy for the retry.
-      const retry = input instanceof Request ? input.clone() : input;
-      const res = await f(input, init);
+      // One Request, cloned before the first send: a body (even a one-shot stream) is read once,
+      // and the retry happens after money has moved, so it must not fail on a used body.
+      const req = new Request(input, init);
+      const retry = req.clone();
+      const res = await f(req);
       if (res.status !== 402) return res;
       const offer = await this.offerIn(res.clone());
       if (!offer) return res;
@@ -247,12 +249,9 @@ export class Grounded {
       }
       const { receiptId } = await this.payValue(agentId, offer.asset, amount, mode);
 
-      // Not `new Request(input)`: the first fetch may have used its body.
-      const url = input instanceof Request ? input.url : new URL(String(input), globalThis.location?.href).href;
-      const method = init?.method ?? (input instanceof Request ? input.method : "GET");
-      const headers = new Headers(init?.headers ?? (retry instanceof Request ? retry.headers : undefined));
-      headers.set(RECEIPT_HEADER, await this.signAccess(receiptId, url, method));
-      return f(retry, { ...init, headers });
+      const headers = new Headers(retry.headers);
+      headers.set(RECEIPT_HEADER, await this.signAccess(receiptId, retry.url, retry.method));
+      return f(new Request(retry, { headers }));
     };
   }
 
