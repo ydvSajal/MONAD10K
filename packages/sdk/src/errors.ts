@@ -54,3 +54,28 @@ export class ContractRevertError extends GroundedError {
     super(`contract reverted with ${errorName}${args?.length ? `(${args.join(", ")})` : "()"}`);
   }
 }
+
+/**
+ * The feedback landed in ERC-8004 but `ground` did not. The rating is public and uncounted until
+ * `groundFeedback` succeeds with `feedbackIndex`, so the index is carried here rather than lost.
+ */
+export class GroundFailedError extends GroundedError {
+  constructor(
+    readonly receiptId: bigint,
+    readonly feedbackIndex: bigint,
+    readonly feedbackTx: string,
+    readonly cause: unknown,
+  ) {
+    super(
+      `feedback ${feedbackIndex} was posted (${feedbackTx}) but grounding receipt ${receiptId} failed: ` +
+        `${cause instanceof Error ? cause.message : String(cause)}. Retry with groundFeedback()`,
+    );
+  }
+}
+
+/** A wallet client with an account is needed for anything that sends a transaction. */
+export class NoWalletError extends GroundedError {
+  constructor() {
+    super("this call sends a transaction: pass a walletClient with an account in the config");
+  }
+}

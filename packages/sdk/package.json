@@ -25,6 +25,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "ox": "^0.14.45",
     "viem": "^2.21.0",
     "zod": "^3.23.8"
   },

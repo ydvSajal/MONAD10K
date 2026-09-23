@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { Address, PublicClient, WalletClient } from "viem";
+import type { Address, Hex, PublicClient, WalletClient } from "viem";
+import type { Authenticator } from "./authenticator.js";
 
 export type ChainName = "monad-testnet";
 
@@ -68,3 +69,66 @@ export const trustPolicySchema = z.object({
   minReviewers: z.number().int().min(0),
   ratingsAfterOwnerChange: z.boolean().optional(),
 });
+
+export type PayMode = "transfer" | "authorization";
+export type RatingTag = "quality" | "dispute";
+
+export interface PayArgs {
+  agentId: bigint | number | string;
+  /** Decimal amount in token units, e.g. "0.05". The router's floor is 0.01 USDC. */
+  amount: string;
+  /** Defaults to Monad testnet USDC. */
+  token?: Address;
+  /**
+   * `transfer` approves the router and calls `pay` (two transactions the first time).
+   * `authorization` signs an EIP-3009 authorization and calls `payWithAuthorization` (one).
+   */
+  mode?: PayMode;
+}
+
+export interface PayResult {
+  receiptId: bigint;
+  txHash: Hex;
+}
+
+export const payArgsSchema = z.object({
+  agentId: agentIdSchema,
+  amount: z
+    .string()
+    .regex(/^\d+(\.\d+)?$/, "amount must be a plain decimal string like 0.05")
+    .refine((a) => Number(a) >= 0.01, "amount must be at least 0.01"),
+  token: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
+  mode: z.enum(["transfer", "authorization"]).default("transfer"),
+});
+
+/**
+ * Capped at a day. The deadline is encoded as uint40 only after the feedback is posted, so an
+ * out-of-range value must fail here, before anything public happens.
+ */
+export const deadlineSchema = z.object({
+  deadlineSec: z.number().int().positive().max(86_400).default(600),
+});
+
+export const ratingSchema = deadlineSchema.extend({
+  receiptId: z.coerce.bigint().positive(),
+  score: z.number().int().min(0).max(100),
+  tag: z.enum(["quality", "dispute"]).default("quality"),
+});
+
+export interface RateArgs {
+  /** A receipt from `pay`, paid by this wallet and not yet used. */
+  receiptId: bigint | number | string;
+  /** 0..100, integer. */
+  score: number;
+  /** `dispute` is counted separately and never moves the score. Default `quality`. */
+  tag?: RatingTag;
+  authenticator: Authenticator;
+  /** How long the passkey signature stays valid, from the current block. Default 600. */
+  deadlineSec?: number;
+}
+
+export interface RateResult {
+  feedbackTx: Hex;
+  groundTx: Hex;
+  feedbackIndex: bigint;
+}
