@@ -62,9 +62,10 @@ describe.skipIf(!rpcUrl || !addressesPath)("Grounded (forked chain)", () => {
 
   it("reads a fresh agent as unrated, and says so rather than scoring it zero", async () => {
     const g = await client();
-    const score = await g.score(1n);
+    // Agent 2, not 1: write.fork.test.ts rates agent 1, and vitest runs files in parallel.
+    const score = await g.score(2n);
 
-    expect(score.agentId).toBe(1n);
+    expect(score.agentId).toBe(2n);
     expect(score.score).toBe(0);
     expect(score.reviewers).toBe(0);
     expect(score.confidence).toBe("none");
@@ -74,7 +75,7 @@ describe.skipIf(!rpcUrl || !addressesPath)("Grounded (forked chain)", () => {
 
   it("fails a policy check on an unrated agent, and explains why", async () => {
     const g = await client();
-    const result = await g.check(1n, { minScore: 70, minReviewers: 5 });
+    const result = await g.check(2n, { minScore: 70, minReviewers: 5 });
 
     expect(result.pass).toBe(false);
     expect(result.reasons.join(" ")).toContain("no grounded ratings yet");

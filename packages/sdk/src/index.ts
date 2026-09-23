@@ -1,5 +1,7 @@
 export { Grounded } from "./grounded.js";
 export { monadTestnet, knownAddresses } from "./chain.js";
+export { SoftwareAuthenticator } from "./authenticator.js";
+export type { Authenticator, PublicKey, WebAuthnSig } from "./authenticator.js";
 export {
   GroundedError,
   UntrustedAgentError,
@@ -8,6 +10,8 @@ export {
   NoPasskeyBoundError,
   ReceiptAlreadyUsedError,
   ContractRevertError,
+  GroundFailedError,
+  NoWalletError,
 } from "./errors.js";
 export type {
   Addresses,
@@ -15,6 +19,12 @@ export type {
   CheckResult,
   Confidence,
   GroundedConfig,
+  PayArgs,
+  PayMode,
+  PayResult,
+  RateArgs,
+  RateResult,
+  RatingTag,
   ScoreResult,
   TrustPolicy,
 } from "./types.js";
