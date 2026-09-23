@@ -24,6 +24,7 @@ import {
   reviewerRegistryAbi,
 } from "./abi.js";
 import type { Authenticator, WebAuthnSig } from "./authenticator.js";
+import { accessTypedData, encodeAccess, RECEIPT_HEADER, SCHEME, type Offer, type PaymentRequired } from "./x402.js";
 import { chains, knownAddresses } from "./chain.js";
 import {
   AgentNotPayableError,
@@ -40,6 +41,7 @@ import {
   agentIdSchema,
   deadlineSchema,
   payArgsSchema,
+  payOptionsSchema,
   ratingSchema,
   trustPolicySchema,
   type Addresses,
@@ -47,6 +49,8 @@ import {
   type Confidence,
   type GroundedConfig,
   type PayArgs,
+  type PayMode,
+  type PayOptions,
   type PayResult,
   type RateArgs,
   type RateResult,
@@ -86,7 +90,8 @@ export class Grounded {
     this.addresses = { ...knownAddresses[config.chain], ...config.addresses };
   }
 
-  private address(name: keyof Addresses): Address {
+  /** A contract address this client uses. Throws `NotDeployedError` rather than guess. */
+  address(name: keyof Addresses): Address {
     const a = this.addresses[name];
     if (!a) throw new NotDeployedError(name);
     return a;
@@ -172,11 +177,10 @@ export class Grounded {
     const score = await this.score(agentIdInput);
     const reasons: string[] = [];
 
-    if (score.confidence === "none") {
-      reasons.push("no grounded ratings yet — unrated, which is not the same as bad");
-    }
+    // An unrated agent fails only a policy that asks for reviewers: minReviewers 0 opts in to new agents.
     if (score.reviewers < p.minReviewers) {
-      reasons.push(`${score.reviewers} reviewers, policy wants ${p.minReviewers}`);
+      const unrated = score.confidence === "none" ? " (no grounded ratings yet — unrated, which is not the same as bad)" : "";
+      reasons.push(`${score.reviewers} reviewers${unrated}, policy wants ${p.minReviewers}`);
     }
     if (score.score < p.minScore) {
       reasons.push(`score ${score.score}, policy wants ${p.minScore}`);
@@ -214,6 +218,79 @@ export class Grounded {
   async pay(args: PayArgs): Promise<PayResult> {
     const { agentId, amount, token: tokenArg, mode } = payArgsSchema.parse(args);
     const token = (tokenArg as Address | undefined) ?? this.address("usdc");
+    return this.payValue(agentId, token, parseUnits(amount, await this.decimals(token)), mode);
+  }
+
+  /**
+   * A `fetch` that answers a `grounded-router` 402 by itself: check the agent against `policy`,
+   * pay through the router, and retry with a signed receipt. An agent that fails the policy throws
+   * `UntrustedAgentError` and is paid nothing. Any other response, including a 402 in some other
+   * scheme, is returned untouched.
+   */
+  withTrust(f: typeof fetch, options: TrustPolicy & PayOptions): typeof fetch {
+    const { maxAmount, mode } = payOptionsSchema.parse(options);
+    trustPolicySchema.parse(options); // fail at wrap time, not on the first 402
+    return async (input, init) => {
+      // One Request, cloned before the first send: a body (even a one-shot stream) is read once,
+      // and the retry happens after money has moved, so it must not fail on a used body.
+      const req = new Request(input, init);
+      const retry = req.clone();
+      const res = await f(req);
+      if (res.status !== 402) return res;
+      const offer = await this.offerIn(res.clone());
+      if (!offer) return res;
+
+      const agentId = BigInt(offer.extra.agentId);
+      const amount = BigInt(offer.amount);
+      await this.assertTrusted(agentId, options);
+      const cap = parseUnits(maxAmount, await this.decimals(offer.asset));
+      if (amount > cap) {
+        throw new GroundedError(`agent ${agentId} asks ${amount} base units, over the ${maxAmount} cap`);
+      }
+      const { receiptId } = await this.payValue(agentId, offer.asset, amount, mode);
+
+      const headers = new Headers(retry.headers);
+      headers.set(RECEIPT_HEADER, await this.signAccess(receiptId, retry.url, retry.method));
+      return f(new Request(retry, { headers }));
+    };
+  }
+
+  /**
+   * The Grounded offer in a 402, or null if it has none. An offer that names our scheme but not our
+   * router or chain is refused outright: paying it would not produce a receipt we can rate with.
+   */
+  private async offerIn(res: Response): Promise<Offer | null> {
+    const body = (await res.json().catch(() => null)) as PaymentRequired | null;
+    const offer = body?.accepts?.find((a) => a.scheme === SCHEME);
+    if (!offer) return null;
+    const chainId = await this.publicClient.getChainId();
+    const token = this.address("usdc");
+    if (
+      offer.network !== `eip155:${chainId}` ||
+      !isAddressEqual(offer.payTo, this.address("receiptRouter")) ||
+      !isAddressEqual(offer.extra.receiptRegistry, this.address("receiptRegistry")) ||
+      !isAddressEqual(offer.asset, token)
+    ) {
+      throw new GroundedError(`402 offer is not for this Grounded deployment: ${JSON.stringify(offer)}`);
+    }
+    return offer;
+  }
+
+  /** The `X-GROUNDED-RECEIPT` value: proof that the payer of `receiptId` is the one asking. */
+  async signAccess(receiptId: bigint, url: string, method: string): Promise<string> {
+    const { wallet, account } = this.signer();
+    const iat = Math.floor(Date.now() / 1000);
+    const access = { receiptId, url, method: method.toUpperCase(), iat };
+    const typed = accessTypedData(access, await this.publicClient.getChainId(), this.address("receiptRegistry"));
+    const sig = await wallet.signTypedData({ account, ...typed });
+    return encodeAccess({ ...access, payer: account.address, sig });
+  }
+
+  private decimals(token: Address): Promise<number> {
+    return this.publicClient.readContract({ address: token, abi: erc20Abi, functionName: "decimals" });
+  }
+
+  private async payValue(agentId: bigint, token: Address, value: bigint, mode: PayMode): Promise<PayResult> {
     const router = this.address("receiptRouter");
     const { wallet, account } = this.signer();
 
@@ -223,13 +300,6 @@ export class Grounded {
     if (isAddressEqual(to, router)) {
       throw new GroundedError(`agent ${agentId}'s payout wallet is the router itself; the router refuses to pay it`);
     }
-
-    const decimals = await this.publicClient.readContract({
-      address: token,
-      abi: erc20Abi,
-      functionName: "decimals",
-    });
-    const value = parseUnits(amount, decimals);
 
     let receipt: TransactionReceipt;
     if (mode === "authorization") {

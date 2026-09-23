@@ -18,6 +18,9 @@ import { SoftwareAuthenticator } from "../src/authenticator.js";
 import { erc8004IdentityAbi, erc8004ReputationAbi } from "../src/abi.js";
 import { AgentNotPayableError, ContractRevertError, ReceiptAlreadyUsedError } from "../src/errors.js";
 import { monadTestnet } from "../src/chain.js";
+import { groundedPaywall, memoryReceiptStore } from "../src/server.js";
+import { RECEIPT_HEADER } from "../src/x402.js";
+import { UntrustedAgentError } from "../src/errors.js";
 
 /**
  * The whole write path against the real contracts on an anvil fork of Monad testnet, with the live
@@ -146,5 +149,64 @@ describe.skipIf(!rpcUrl || !addressesPath)("write path (forked chain)", () => {
   it("refuses to pay an agent with no payout wallet, before spending an approve", async () => {
     const { g } = await buyer();
     await expect(g.pay({ agentId: UNPAYABLE_AGENT, amount: "0.05" })).rejects.toBeInstanceOf(AgentNotPayableError);
+  });
+
+  /** A seller for AGENT behind the paywall, reachable as a plain fetch, no HTTP server needed. */
+  function seller() {
+    const grounded = new Grounded({ chain: "monad-testnet", publicClient, addresses: deployment as never });
+    const mw = groundedPaywall({ grounded, agentId: AGENT, price: "0.05", store: memoryReceiptStore() });
+    return async (input: RequestInfo | URL, init?: RequestInit) =>
+      (await mw({ req: { raw: new Request(input, init) } }, async () => {})) ?? new Response("summary");
+  }
+  const URL_ = "https://seller.test/summarise";
+  const usdcOf = (who: Address) =>
+    publicClient.readContract({ address: deployment.usdc as Address, abi: erc20Abi, functionName: "balanceOf", args: [who] });
+
+  it("402 loop: a trusted agent is paid through the paywall and serves 200, once per receipt", async () => {
+    const rater = await buyer(); // make sure AGENT has at least one grounded reviewer
+    await rater.g.bindPasskey(rater.auth);
+    await rater.g.rate({ ...(await rater.g.pay({ agentId: AGENT, amount: "0.05" })), score: 80, authenticator: rater.auth });
+
+    const { g, address } = await buyer();
+    const sent: Request[] = [];
+    const s = seller();
+    const f = g.withTrust(
+      async (i, init) => {
+        sent.push(new Request(i, init));
+        return s(i, init);
+      },
+      { minScore: 0, minReviewers: 1, maxAmount: "0.10" },
+    );
+
+    const before = await usdcOf(address);
+    const res = await f(URL_);
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("summary");
+    expect(before - (await usdcOf(address))).toBe(50_000n);
+
+    // the same signed header again: the receipt already bought its response
+    const replay = await s(URL_, { headers: { [RECEIPT_HEADER]: sent[1]!.headers.get(RECEIPT_HEADER)! } });
+    expect(replay.status).toBe(402);
+    expect((await replay.json()).error).toContain("already used");
+  });
+
+  it("402 loop: an untrusted agent gets nothing paid", async () => {
+    const { g, address } = await buyer();
+    const before = await usdcOf(address);
+    const f = g.withTrust(seller(), { minScore: 0, minReviewers: 1_000_000, maxAmount: "0.10" });
+
+    await expect(f(URL_)).rejects.toBeInstanceOf(UntrustedAgentError);
+    expect(await usdcOf(address)).toBe(before);
+  });
+
+  it("402 loop: a receipt id alone is worthless to anyone but its payer", async () => {
+    const victim = await buyer();
+    const { receiptId } = await victim.g.pay({ agentId: AGENT, amount: "0.05" });
+    const thief = await buyer();
+
+    // receipt ids are public onchain; the thief signs a header claiming the victim's
+    const res = await seller()(URL_, { headers: { [RECEIPT_HEADER]: await thief.g.signAccess(receiptId, URL_, "GET") } });
+    expect(res.status).toBe(402);
+    expect((await res.json()).error).toContain("paid by someone else");
   });
 });

@@ -86,17 +86,32 @@ export interface PayArgs {
   mode?: PayMode;
 }
 
+/** How `withTrust` pays. The seller names the price, so the buyer names a ceiling. */
+export interface PayOptions {
+  /** Most the buyer will pay per request, as a decimal in token units, e.g. "0.10". Required. */
+  maxAmount: string;
+  mode?: PayMode;
+}
+
+export const payOptionsSchema = z.object({
+  maxAmount: z.string().regex(/^\d+(\.\d+)?$/, "maxAmount must be a plain decimal string like 0.10"),
+  mode: z.enum(["transfer", "authorization"]).default("transfer"),
+});
+
 export interface PayResult {
   receiptId: bigint;
   txHash: Hex;
 }
 
+/** Decimal token units, at or above the router's 0.01 floor (`MIN_AMOUNT_6DP`). */
+export const amountSchema = z
+  .string()
+  .regex(/^\d+(\.\d+)?$/, "amount must be a plain decimal string like 0.05")
+  .refine((a) => Number(a) >= 0.01, "amount must be at least 0.01, the router's floor");
+
 export const payArgsSchema = z.object({
   agentId: agentIdSchema,
-  amount: z
-    .string()
-    .regex(/^\d+(\.\d+)?$/, "amount must be a plain decimal string like 0.05")
-    .refine((a) => Number(a) >= 0.01, "amount must be at least 0.01"),
+  amount: amountSchema,
   token: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
   mode: z.enum(["transfer", "authorization"]).default("transfer"),
 });
