@@ -7,6 +7,7 @@ import {ReceiptRegistry} from "./ReceiptRegistry.sol";
 import {ReceiptRouter} from "./ReceiptRouter.sol";
 import {ReviewerRegistry} from "./ReviewerRegistry.sol";
 import {Erc8004Adapter} from "./adapters/Erc8004Adapter.sol";
+import {IGroundedReputation} from "./interfaces/IGroundedReputation.sol";
 import {IIdentityRegistry} from "./interfaces/IIdentityRegistry.sol";
 import {IReputationRegistry} from "./interfaces/IReputationRegistry.sol";
 import {GroundedWebAuthn} from "./lib/GroundedWebAuthn.sol";
@@ -18,7 +19,7 @@ import {Receipt, ReceiptStatus, Score, WebAuthnSig} from "./types/GroundedTypes.
 ///         passkey. One receipt buys one rating; one reviewer holds one live rating per agent.
 /// @dev No owner, no admin, no upgrade path. Everything here is either a read of ERC-8004 or a
 ///      write to our own storage; `giveFeedback` is never called from this contract.
-contract GroundedReputation is EIP712 {
+contract GroundedReputation is EIP712, IGroundedReputation {
     using ScoringLib for uint64[21];
 
     /// @dev One slot. `feedbackIndex` is what makes `sweepRevoked` possible.
