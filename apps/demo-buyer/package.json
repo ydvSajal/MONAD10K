@@ -1,0 +1,20 @@
+{
+  "name": "@grounded/demo-buyer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A script agent that buys from a 402 seller only if Grounded says the seller is trusted",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@grounded/sdk": "workspace:*",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.6.0"
+  }
+}
