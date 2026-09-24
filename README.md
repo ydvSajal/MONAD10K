@@ -126,6 +126,8 @@ Honest limits:
 | `contracts/src/` | `ReceiptRegistry`, `ReceiptRouter`, `ReviewerRegistry`, `GroundedReputation`, `lib/ScoringLib`, `lib/GroundedWebAuthn`, `adapters/Erc8004Adapter` |
 | `contracts/test/` | `unit/`, `fork/` (live testnet, opt-in), `invariant/` |
 | `contracts/abi/erc8004/` | ABIs of the deployed ERC-8004 registries, selector-verified against testnet bytecode |
+| `packages/sdk/` | `@grounded/sdk`: score/check, pay/rate, `withTrust`, and `groundedPaywall` (`/server`) |
+| `apps/demo-seller/` | Hono agent service charging per request through the 402 paywall |
 | `grounded-docs/` | PRD, TRD, system architecture, timeline, deployment, integrations |
 | `docs/BUILDLOG.md`, `docs/TASKS.md` | Daily log, and what is left |
 
@@ -140,6 +142,23 @@ MONAD_FORK_RPC=https://testnet-rpc.monad.xyz \
 ```
 
 `-n monad` selects Foundry's Monad network family — forks fail without it.
+
+### Run the stack locally
+
+There is no offchain facilitator: `ReceiptRouter` settles every payment onchain. Locally that means an anvil fork of Monad testnet with our four contracts on it, and a seller behind the 402 paywall.
+
+```bash
+# 1. chain: fork testnet (live ERC-8004 + USDC underneath), deploy Grounded to it
+anvil --fork-url https://testnet-rpc.monad.xyz --host 0.0.0.0
+cd contracts && RP_ID=localhost forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 \
+  --private-key <anvil key 0> --broadcast --skip-simulation     # writes deployments/10143.json
+
+# 2. backend: demo seller, paid as agent 1 (has a payout wallet)
+pnpm --filter @grounded/sdk build
+SELLER_AGENT_ID=1 NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545 pnpm --filter @grounded/demo-seller start   # :8787
+```
+
+`GET /insight` answers 402 until a buyer pays through the router; `grounded.withTrust(fetch, policy)` from the SDK does that automatically.
 
 ## Verified on chain, not assumed
 
