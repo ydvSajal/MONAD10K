@@ -128,6 +128,7 @@ Honest limits:
 | `contracts/abi/erc8004/` | ABIs of the deployed ERC-8004 registries, selector-verified against testnet bytecode |
 | `packages/sdk/` | `@grounded/sdk`: score/check, pay/rate, `withTrust`, and `groundedPaywall` (`/server`) |
 | `apps/demo-seller/` | Hono agent service charging per request through the 402 paywall |
+| `apps/demo-buyer/` | Script agent that pays a 402 seller only if its agent passes a trust policy |
 | `grounded-docs/` | PRD, TRD, system architecture, timeline, deployment, integrations |
 | `docs/BUILDLOG.md`, `docs/TASKS.md` | Daily log, and what is left |
 
@@ -156,9 +157,13 @@ cd contracts && RP_ID=localhost forge script script/Deploy.s.sol --rpc-url http:
 # 2. backend: demo seller, paid as agent 1 (has a payout wallet)
 pnpm --filter @grounded/sdk build
 SELLER_AGENT_ID=1 NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545 pnpm --filter @grounded/demo-seller start   # :8787
+
+# 3. buyer: pays only if agent 1 passes the policy (default: score >= 70 from >= 1 reviewer)
+BUYER_PRIVATE_KEY=<funded key> NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545 pnpm --filter @grounded/demo-buyer start -- \
+  --target http://localhost:8787/insight --min-score 0 --min-reviewers 0
 ```
 
-`GET /insight` answers 402 until a buyer pays through the router; `grounded.withTrust(fetch, policy)` from the SDK does that automatically.
+`GET /insight` answers 402 until a buyer pays through the router; the buyer's `withTrust(fetch, policy)` does that automatically. An agent that fails the policy is paid nothing and the buyer exits 2 with the reasons.
 
 ## Verified on chain, not assumed
 
