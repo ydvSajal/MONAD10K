@@ -45,6 +45,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # SDK tests that need a deployment are skipped without GROUNDED_TEST_RPC,
       # so CI stays offline and deterministic (same rule as the Foundry fork tests).
+      # Build first: apps typecheck against the SDK's emitted dist/ types.
+      - run: pnpm -r build
       - run: pnpm -r typecheck
       - run: pnpm -r test
-      - run: pnpm -r build
