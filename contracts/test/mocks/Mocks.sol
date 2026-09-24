@@ -28,10 +28,12 @@ contract MockERC3009 is MockERC20 {
 
     error AuthorizationUsed();
     error AuthorizationExpired();
+    error CallerNotPayee();
 
     constructor(uint8 d) MockERC20("Mock3009", "M3009", d) {}
 
-    function transferWithAuthorization(
+    /// @dev Like USDC: only the payee may redeem the authorization.
+    function receiveWithAuthorization(
         address from,
         address to,
         uint256 value,
@@ -42,6 +44,7 @@ contract MockERC3009 is MockERC20 {
         bytes32,
         bytes32
     ) external {
+        if (msg.sender != to) revert CallerNotPayee();
         if (authorizationState[from][nonce]) revert AuthorizationUsed();
         if (block.timestamp <= validAfter || block.timestamp >= validBefore) revert AuthorizationExpired();
         authorizationState[from][nonce] = true;

@@ -263,9 +263,14 @@ contract GroundedReputationTest is Base, WebAuthnHelper {
         uint256 id = _payAndRate(payer, 0.5e6, 80, "quality");
         _groundIt(payer, PK_PAYER, id, 80, false);
         assertEq(grd.scoreOf(AGENT).ownerChangedAt, 0, "first rating only records the owner");
+        address firstOwner = identity.ownerOf(AGENT);
+        assertEq(grd.lastOwnerOf(AGENT), firstOwner);
 
         address newOwner = makeAddr("newOwner");
         identity.setAgent(AGENT, newOwner, agentWallet);
+        // Before anyone rates again, only lastOwnerOf vs ownerOf reveals the sale.
+        assertEq(grd.scoreOf(AGENT).ownerChangedAt, 0);
+        assertTrue(grd.lastOwnerOf(AGENT) != identity.ownerOf(AGENT), "sale visible before the next rating");
 
         vm.warp(block.timestamp + 1 days);
         deadline = uint40(block.timestamp + 1 hours);
@@ -275,5 +280,6 @@ contract GroundedReputationTest is Base, WebAuthnHelper {
         _groundIt(payer, PK_PAYER, second, 80, false);
 
         assertEq(grd.scoreOf(AGENT).ownerChangedAt, uint40(block.timestamp), "transfer seen on the next rating");
+        assertEq(grd.lastOwnerOf(AGENT), newOwner);
     }
 }

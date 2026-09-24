@@ -5,6 +5,7 @@ import {Test} from "forge-std/Test.sol";
 
 import {ReceiptRegistry} from "../../src/ReceiptRegistry.sol";
 import {ReceiptRouter} from "../../src/ReceiptRouter.sol";
+import {IERC3009} from "../../src/interfaces/IERC3009.sol";
 import {IIdentityRegistry} from "../../src/interfaces/IIdentityRegistry.sol";
 
 interface IUsdc {
@@ -20,8 +21,9 @@ contract Usdc3009ForkTest is Test {
     address internal constant IDENTITY = 0x8004A818BFB912233c491871b3d84c89A494BD9e;
     uint256 internal constant AGENT = 1;
 
-    bytes32 internal constant TRANSFER_WITH_AUTHORIZATION_TYPEHASH = keccak256(
-        "TransferWithAuthorization(address from,address to,uint256 value,uint256 validAfter,uint256 validBefore,bytes32 nonce)"
+    uint256 internal constant VALUE = 0.05e6;
+    bytes32 internal constant RECEIVE_WITH_AUTHORIZATION_TYPEHASH = keccak256(
+        "ReceiveWithAuthorization(address from,address to,uint256 value,uint256 validAfter,uint256 validBefore,bytes32 nonce)"
     );
 
     ReceiptRegistry internal receipts;
@@ -63,27 +65,69 @@ contract Usdc3009ForkTest is Test {
     function test_payWithAuthorization_againstRealUsdc() public {
         address to = IIdentityRegistry(IDENTITY).getAgentWallet(AGENT);
         assertTrue(to != address(0), "agent 1 has no wallet");
+        bytes32 salt = keccak256("grounded-fork-test");
+        (uint256 validBefore, bytes memory sig) = _authorize(AGENT, salt);
 
-        uint256 value = 0.05e6;
-        uint256 validAfter = 0;
-        uint256 validBefore = block.timestamp + 1 hours;
-        bytes32 nonce = keccak256("grounded-fork-test");
+        uint256 toBefore = IUsdc(USDC).balanceOf(to);
+        uint256 id = router.payWithAuthorization(AGENT, USDC, payer, VALUE, 0, validBefore, salt, sig);
 
+        assertEq(id, 1);
+        assertEq(IUsdc(USDC).balanceOf(to) - toBefore, VALUE, "agent wallet not paid");
+        assertEq(IUsdc(USDC).balanceOf(address(router)), 0, "router kept funds");
+        assertTrue(IUsdc(USDC).authorizationState(payer, router.authorizationNonce(AGENT, salt)), "not burned");
+        assertEq(receipts.get(id).payer, payer);
+    }
+
+    /// @dev The front-run the receive path exists to stop: redeeming the signed authorization
+    ///      straight at the token would move the money with no receipt. USDC refuses anyone but the payee.
+    function test_authorizationCannotBeRedeemedOutsideTheRouter() public {
+        bytes32 salt = keccak256("front-run");
+        (uint256 validBefore, bytes memory sig) = _authorize(AGENT, salt);
+        (bytes32 r, bytes32 s, uint8 v) = _split(sig);
+        bytes32 nonce = router.authorizationNonce(AGENT, salt); // before the prank: it is a call too
+
+        vm.prank(makeAddr("frontRunner"));
+        vm.expectRevert();
+        IERC3009(USDC).receiveWithAuthorization(payer, address(router), VALUE, 0, validBefore, nonce, v, r, s);
+
+        // The router, the named payee, can still redeem it.
+        router.payWithAuthorization(AGENT, USDC, payer, VALUE, 0, validBefore, salt, sig);
+    }
+
+    /// @dev A relayer cannot take an authorization signed to pay one agent and spend it on another.
+    function test_authorizationCannotBeRelayedToAnotherAgent() public {
+        uint256 other = AGENT + 1;
+        assertTrue(IIdentityRegistry(IDENTITY).getAgentWallet(other) != address(0), "agent 2 has no wallet");
+        bytes32 salt = keccak256("redirect");
+        (uint256 validBefore, bytes memory sig) = _authorize(AGENT, salt);
+
+        vm.expectRevert();
+        router.payWithAuthorization(other, USDC, payer, VALUE, 0, validBefore, salt, sig);
+    }
+
+    function _authorize(uint256 agentId, bytes32 salt) internal view returns (uint256 validBefore, bytes memory) {
+        validBefore = block.timestamp + 1 hours;
         bytes32 structHash = keccak256(
-            abi.encode(TRANSFER_WITH_AUTHORIZATION_TYPEHASH, payer, to, value, validAfter, validBefore, nonce)
+            abi.encode(
+                RECEIVE_WITH_AUTHORIZATION_TYPEHASH,
+                payer,
+                address(router),
+                VALUE,
+                uint256(0),
+                validBefore,
+                router.authorizationNonce(agentId, salt)
+            )
         );
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", IUsdc(USDC).DOMAIN_SEPARATOR(), structHash));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(payerKey, digest);
+        return (validBefore, abi.encodePacked(r, s, v));
+    }
 
-        uint256 toBefore = IUsdc(USDC).balanceOf(to);
-        uint256 id = router.payWithAuthorization(
-            AGENT, USDC, payer, value, validAfter, validBefore, nonce, abi.encodePacked(r, s, v)
-        );
-
-        assertEq(id, 1);
-        assertEq(IUsdc(USDC).balanceOf(to) - toBefore, value, "agent wallet not paid");
-        assertEq(IUsdc(USDC).balanceOf(address(router)), 0, "router kept funds");
-        assertTrue(IUsdc(USDC).authorizationState(payer, nonce), "authorization not burned");
-        assertEq(receipts.get(id).payer, payer);
+    function _split(bytes memory sig) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
+        assembly {
+            r := mload(add(sig, 32))
+            s := mload(add(sig, 64))
+            v := byte(0, mload(add(sig, 96)))
+        }
     }
 }

@@ -13,8 +13,8 @@ library Erc8004Adapter {
     bytes32 internal constant TAG_DISPUTE = keccak256(bytes("dispute"));
 
     /// @notice Read one feedback entry and check it is gradeable.
-    /// @dev A non-existent index reads back as an empty tag, so the tag check doubles as the
-    ///      existence check and saves a `getLastIndex` call.
+    /// @dev The live registry reverts on a non-existent index (`index must be > 0` /
+    ///      `index out of bounds`), so no existence check is needed here.
     /// @return ok   False when the entry is missing, revoked, off-scale, or not one of our tags.
     /// @return score Clamped to 0..100 and only meaningful when `ok`.
     /// @return isDispute True for `tag1 == "dispute"`, which is counted but never scored.

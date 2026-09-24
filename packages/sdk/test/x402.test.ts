@@ -6,7 +6,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { Grounded } from "../src/grounded.js";
 import { groundedPaywall, memoryReceiptStore } from "../src/server.js";
 import { encodeAccess, RECEIPT_HEADER, type PaymentRequired } from "../src/x402.js";
-import { GroundedError, UntrustedAgentError } from "../src/errors.js";
+import { GroundedError, PaymentNotAcceptedError, UntrustedAgentError } from "../src/errors.js";
 import { monadTestnet } from "../src/chain.js";
 import type { ScoreResult } from "../src/types.js";
 
@@ -140,6 +140,42 @@ describe("withTrust", () => {
     expect(seen).toEqual(["summarise this", "summarise this"]);
   });
 
+  it("re-sends after a paid 402 (seller's RPC a block behind), and pays only once", async () => {
+    const g = client(true);
+    vi.spyOn(g, "score").mockResolvedValue(unrated);
+    const pay = vi.spyOn(g as never, "payValue").mockResolvedValue({ receiptId: 5n, txHash: "0x" } as never);
+    const offer = await (await paywall()(new Request("https://seller.test/summarise"))).json();
+    let paidTries = 0;
+    const f = g.withTrust(
+      async (i) => {
+        if (!(i as Request).headers.has(RECEIPT_HEADER)) return Response.json(offer, { status: 402 });
+        return ++paidTries < 2 ? Response.json({ ...offer, error: "no such receipt" }, { status: 402 }) : new Response("ok");
+      },
+      { minScore: 0, minReviewers: 0, maxAmount: "1" },
+    );
+
+    expect(await (await f("https://seller.test/summarise")).text()).toBe("ok");
+    expect(paidTries).toBe(2);
+    expect(pay).toHaveBeenCalledTimes(1);
+  });
+
+  it("hands back the receipt id when the seller never accepts the payment", async () => {
+    const g = client(true);
+    vi.spyOn(g, "score").mockResolvedValue(unrated);
+    vi.spyOn(g as never, "payValue").mockResolvedValue({ receiptId: 5n, txHash: "0x" } as never);
+    const offer = await (await paywall()(new Request("https://seller.test/summarise"))).json();
+    const f = g.withTrust(async () => Response.json({ ...offer, error: "receipt already used" }, { status: 402 }), {
+      minScore: 0,
+      minReviewers: 0,
+      maxAmount: "1",
+    });
+
+    const err = await f("https://seller.test/summarise").catch((e) => e);
+    expect(err).toBeInstanceOf(PaymentNotAcceptedError);
+    expect(err.receiptId).toBe(5n);
+    expect(err.reason).toBe("receipt already used");
+  }, 10_000);
+
   it("returns any non-402 response untouched and never pays", async () => {
     const g = client(true);
     const pay = vi.spyOn(g, "pay");
@@ -192,5 +228,26 @@ describe("check", () => {
     expect((await g.check(7n, { minScore: 0, minReviewers: 0 })).pass).toBe(true);
     const strict = await g.check(7n, { minScore: 0, minReviewers: 1 });
     expect(strict.reasons.join(" ")).toContain("no grounded ratings yet");
+  });
+
+  it("catches an agent sold since its last rating, before anyone rates it again", async () => {
+    const owners: Record<string, Address> = {
+      lastOwnerOf: "0x00000000000000000000000000000000000000a1",
+      ownerOf: "0x00000000000000000000000000000000000000b2",
+    };
+    const g = new Grounded({
+      chain: "monad-testnet",
+      addresses,
+      publicClient: { readContract: async ({ functionName }: { functionName: string }) => owners[functionName] } as never,
+    });
+    vi.spyOn(g, "score").mockResolvedValue({ ...unrated, reviewers: 9, score: 90, confidence: "ok" });
+
+    expect((await g.check(7n, { minScore: 70, minReviewers: 1 })).pass).toBe(true);
+    const strict = await g.check(7n, { minScore: 70, minReviewers: 1, ratingsAfterOwnerChange: false });
+    expect(strict.pass).toBe(false);
+    expect(strict.reasons.join(" ")).toContain("changed owner since its last grounded rating");
+
+    owners.ownerOf = owners.lastOwnerOf!;
+    expect((await g.check(7n, { minScore: 70, minReviewers: 1, ratingsAfterOwnerChange: false })).pass).toBe(true);
   });
 });

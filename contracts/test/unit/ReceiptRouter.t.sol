@@ -108,6 +108,17 @@ contract ReceiptRouterTest is Base {
 
         assertEq(receipts.get(id).payer, payer, "receipt credits the signer");
         assertEq(usdc3009.balanceOf(agentWallet), 0.05e6);
+        assertEq(usdc3009.balanceOf(address(router)), 0, "router passes funds through");
+    }
+
+    function test_payWithAuthorization_nonceCommitsToAgent() public {
+        bytes32 salt = bytes32("s1");
+        router.payWithAuthorization(
+            AGENT, address(usdc3009), payer, 0.05e6, block.timestamp - 1, block.timestamp + 1 hours, salt, new bytes(65)
+        );
+        assertTrue(usdc3009.authorizationState(payer, router.authorizationNonce(AGENT, salt)), "agent-bound nonce used");
+        assertFalse(usdc3009.authorizationState(payer, salt), "raw salt never used as the nonce");
+        assertTrue(router.authorizationNonce(AGENT, salt) != router.authorizationNonce(AGENT + 1, salt));
     }
 
     function test_payWithAuthorization_revertsOnBadSignatureLength() public {

@@ -5,7 +5,8 @@ pragma solidity ^0.8.28;
 /// @dev Monad testnet USDC 0x534b2f3A21130d7a60830c2Df862319e593943A3 exposes this
 ///      (EIP-712 domain name "USDC", version "2" — verified on chain).
 interface IERC3009 {
-    function transferWithAuthorization(
+    /// @dev Only `to` may submit it, which is what stops a relayer front-running the router.
+    function receiveWithAuthorization(
         address from,
         address to,
         uint256 value,

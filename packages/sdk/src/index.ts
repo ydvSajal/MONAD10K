@@ -12,6 +12,7 @@ export {
   ContractRevertError,
   GroundFailedError,
   NoWalletError,
+  PaymentNotAcceptedError,
 } from "./errors.js";
 export type {
   Addresses,

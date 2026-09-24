@@ -3,7 +3,7 @@ import { parseArgs } from "node:util";
 
 import { createWalletClient, http, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { Grounded, UntrustedAgentError, monadTestnet } from "@grounded/sdk";
+import { Grounded, GroundedError, UntrustedAgentError, monadTestnet } from "@grounded/sdk";
 
 const { values: args } = parseArgs({
   options: {
@@ -30,21 +30,27 @@ const grounded = new Grounded({
   addresses: JSON.parse(readFileSync(env.GROUNDED_ADDRESSES ?? "../../deployments/10143.json", "utf8")),
 });
 
-// Pays only if the seller's agent meets the policy; an untrusted agent is refused before any money moves.
-const buy = grounded.withTrust(fetch, {
-  minScore: Number(args["min-score"]),
-  minReviewers: Number(args["min-reviewers"]),
-  maxAmount: args.max,
-});
-
 try {
+  // Pays only if the seller's agent meets the policy; an untrusted agent is refused before any money moves.
+  const buy = grounded.withTrust(fetch, {
+    minScore: Number(args["min-score"]),
+    minReviewers: Number(args["min-reviewers"]),
+    maxAmount: args.max,
+  });
   const res = await buy(args.target);
   console.log(`HTTP ${res.status}`);
   console.log(await res.text());
   process.exitCode = res.ok ? 0 : 1;
 } catch (e) {
-  if (!(e instanceof UntrustedAgentError)) throw e;
-  console.log(`refused agent ${e.agentId}:`);
-  for (const r of e.reasons) console.log(`  - ${r}`);
-  process.exitCode = 2;
+  if (e instanceof UntrustedAgentError) {
+    console.log(`refused agent ${e.agentId}:`);
+    for (const r of e.reasons) console.log(`  - ${r}`);
+    process.exitCode = 2;
+  } else if (e instanceof GroundedError || (e instanceof Error && e.name === "ZodError")) {
+    // Expected failures (price over the cap, bad flags, seller refused a paid receipt): one line, no stack.
+    console.error(`error: ${e.message}`);
+    process.exitCode = 1;
+  } else {
+    throw e;
+  }
 }
