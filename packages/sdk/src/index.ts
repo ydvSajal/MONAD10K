@@ -1,4 +1,5 @@
 export { Grounded } from "./grounded.js";
+export * from "./abi.js";
 export { monadTestnet, knownAddresses } from "./chain.js";
 export { SoftwareAuthenticator } from "./authenticator.js";
 export type { Authenticator, PublicKey, WebAuthnSig } from "./authenticator.js";
