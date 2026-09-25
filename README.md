@@ -178,7 +178,7 @@ Every load-bearing claim below was checked against Monad testnet rather than tak
 | ERC-8004 feedback indices are **1-based** | Written and read back through the live registry (23 Sep) |
 | `MCOPY`/`TSTORE` execute on 10143 | Probed with `cast call --override-code`, which is why `evm_version = "cancun"` |
 
-Measured gas (fork, live precompile): `pay` 155k · `bind` 158k · `ground` 353k · `sweepRevoked` 108k. About a third of `ground` is exclusion and feedback reads into the ERC-8004 proxies.
+Measured gas (real transactions on a fork, live precompile and registries; see `docs/gas.md`): `pay` 302k · `bind` 148k · `ground` 343k · `sweepRevoked` 108k. About a third of `ground` is exclusion and feedback reads into the ERC-8004 proxies.
 
 ## Receipt lifecycle
 

@@ -131,7 +131,7 @@ Do not ask "would you be interested". Ask for one specific thing: a repo link, o
 |  |  |  |  |
 
 Angles that are genuinely interesting, and true:
-- The P256 precompile verifying a real passkey onchain, 158k gas.
+- The P256 precompile verifying a real passkey onchain, 148k gas.
 - Finding that the score kept counting revoked feedback, and fixing it with a permissionless sweep.
 - Why trimming was removed from the scoring: it cannot move a weighted median, so it was pure gas.
 - Honest post: a passkey is not proof of personhood, and payment is what actually stops sybils.

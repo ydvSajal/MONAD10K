@@ -17,6 +17,7 @@ const port = Number(env.PORT ?? 8787);
 const grounded = new Grounded({
   chain: "monad-testnet",
   ...(env.NEXT_PUBLIC_RPC_URL ? { rpcUrl: env.NEXT_PUBLIC_RPC_URL } : {}),
+  ...(env.RPC_URL_FALLBACK ? { fallbackRpcUrl: env.RPC_URL_FALLBACK } : {}),
   addresses: JSON.parse(readFileSync(env.GROUNDED_ADDRESSES ?? "../../deployments/10143.json", "utf8")),
 });
 

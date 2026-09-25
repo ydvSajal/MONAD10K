@@ -35,62 +35,77 @@ export interface Activity {
 }
 
 const abi = [...receiptRegistryAbi, ...groundedReputationAbi, ...reviewerRegistryAbi];
+/** Public Monad RPCs cap `eth_getLogs` at about 100 blocks per call. */
 const CHUNK = BigInt(process.env.LOG_CHUNK_BLOCKS ?? 100);
-const TTL_MS = 30_000;
+const PARALLEL = 8;
+const TTL_MS = 15_000;
 
-let cache: { at: number; data: Activity } | undefined;
+// The whole scan is one accumulator that only ever moves forward: the first request reads from the
+// deploy block, every later one reads just the blocks since. Monad finalises in one slot, so there is
+// no reorg to undo.
+const data: Activity = { receipts: [], ratings: [], reviewers: new Map(), toBlock: -1n };
+const liveByReviewer = new Map<string, RatingRow>();
+let refreshedAt = 0;
+let inflight: Promise<Activity> | undefined;
 
-// ponytail: rescans every Grounded log from the deploy block, cached 30 s per server instance.
-// Fine for a young deployment; swap this module for Envio GraphQL once testnet history grows.
-export async function getActivity({ client, deployment: d }: Chain): Promise<Activity> {
-  if (cache && Date.now() - cache.at < TTL_MS) return cache.data;
+// ponytail: in-memory per server instance, so a cold start rescans from the deploy block (about 2,000
+// calls per day of chain history at 100 blocks per call, 8 in parallel). Swap this module for Envio
+// GraphQL once the deployment is old enough for that to hurt.
+export function getActivity(chain: Chain): Promise<Activity> {
+  if (Date.now() - refreshedAt < TTL_MS) return Promise.resolve(data);
+  return (inflight ??= refresh(chain).finally(() => {
+    inflight = undefined;
+  }));
+}
 
-  const toBlock = await client.getBlockNumber();
-  const raw = [];
-  for (let from = BigInt(d.deployedAtBlock); from <= toBlock; from += CHUNK) {
-    const to = from + CHUNK - 1n < toBlock ? from + CHUNK - 1n : toBlock;
-    raw.push(
-      ...(await client.getLogs({
-        address: [d.receiptRegistry, d.groundedReputation, d.reviewerRegistry],
-        fromBlock: from,
-        toBlock: to,
-      })),
+async function refresh({ client, deployment: d }: Chain): Promise<Activity> {
+  const head = await client.getBlockNumber();
+  const start = data.toBlock < 0n ? BigInt(d.deployedAtBlock) : data.toBlock + 1n;
+
+  const ranges: [bigint, bigint][] = [];
+  for (let from = start; from <= head; from += CHUNK) ranges.push([from, from + CHUNK - 1n < head ? from + CHUNK - 1n : head]);
+
+  const address = [d.receiptRegistry, d.groundedReputation, d.reviewerRegistry];
+  const scanned: Awaited<ReturnType<typeof client.getLogs>>[] = [];
+  for (let i = 0; i < ranges.length; i += PARALLEL) {
+    scanned.push(
+      ...(await Promise.all(ranges.slice(i, i + PARALLEL).map(([fromBlock, toBlock]) => client.getLogs({ address, fromBlock, toBlock })))),
     );
   }
 
-  const data: Activity = { receipts: [], ratings: [], reviewers: new Map(), toBlock };
-  const liveKey = new Map<string, RatingRow>();
-  for (const log of parseEventLogs({ abi, logs: raw, strict: false })) {
-    const at = { tx: log.transactionHash!, block: log.blockNumber! };
-    if (log.eventName === "ReceiptIssued") {
-      const a = log.args;
-      data.receipts.push({ id: a.id!, agentId: a.agentId!, payer: a.payer!, amount: a.amount!, ...at });
-    } else if (log.eventName === "Grounded") {
-      const a = log.args;
-      const row: RatingRow = {
-        agentId: a.agentId!,
-        reviewer: a.reviewer!,
-        receiptId: a.receiptId!,
-        feedbackIndex: a.feedbackIndex!,
-        score: a.score!,
-        weight: a.weight!,
-        isDispute: a.isDispute!,
-        live: true,
-        ...at,
-      };
-      const key = `${row.agentId}:${row.reviewer}`;
-      const prev = liveKey.get(key);
-      if (prev) prev.live = false;
-      liveKey.set(key, row);
-      data.ratings.push(row);
-    } else if (log.eventName === "Swept") {
-      const prev = liveKey.get(`${log.args.agentId}:${log.args.reviewer}`);
-      if (prev) prev.live = false;
-    } else if (log.eventName === "ReviewerBound") {
-      data.reviewers.set(log.args.reviewer!, { keyHash: log.args.keyHash!, tx: at.tx });
-    }
-  }
-
-  cache = { at: Date.now(), data };
+  for (const log of parseEventLogs({ abi, logs: scanned.flat(), strict: false })) fold(log);
+  data.toBlock = head;
+  refreshedAt = Date.now();
   return data;
+}
+
+function fold(log: ReturnType<typeof parseEventLogs<typeof abi, false>>[number]) {
+  const at = { tx: log.transactionHash!, block: log.blockNumber! };
+  if (log.eventName === "ReceiptIssued") {
+    const a = log.args;
+    data.receipts.push({ id: a.id!, agentId: a.agentId!, payer: a.payer!, amount: a.amount!, ...at });
+  } else if (log.eventName === "Grounded") {
+    const a = log.args;
+    const row: RatingRow = {
+      agentId: a.agentId!,
+      reviewer: a.reviewer!,
+      receiptId: a.receiptId!,
+      feedbackIndex: a.feedbackIndex!,
+      score: a.score!,
+      weight: a.weight!,
+      isDispute: a.isDispute!,
+      live: true,
+      ...at,
+    };
+    const key = `${row.agentId}:${row.reviewer}`;
+    const prev = liveByReviewer.get(key);
+    if (prev) prev.live = false;
+    liveByReviewer.set(key, row);
+    data.ratings.push(row);
+  } else if (log.eventName === "Swept") {
+    const prev = liveByReviewer.get(`${log.args.agentId}:${log.args.reviewer}`);
+    if (prev) prev.live = false;
+  } else if (log.eventName === "ReviewerBound") {
+    data.reviewers.set(log.args.reviewer!, { keyHash: log.args.keyHash!, tx: at.tx });
+  }
 }

@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             Grounded
           </Link>
           <span className="muted">payment-grounded reputation for ERC-8004 agents · Monad testnet</span>
+          <Link href="/agents">Agents</Link>
           <Link href="/docs">Docs</Link>
         </header>
         <main>{children}</main>

@@ -2,62 +2,71 @@ import Link from "next/link";
 
 import { getActivity } from "../lib/events";
 import { getChain } from "../lib/grounded";
-import { Grounded, NotDeployed } from "./ui";
+import { NotDeployed, usdc } from "./ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const chain = getChain();
-  if (!chain) return <NotDeployed />;
+/** Scored on the landing page: the most recently rated agents, so one request stays a handful of reads. */
+const FEATURE_WINDOW = 12;
 
-  const activity = await getActivity(chain);
-  const ids = [...new Set([...activity.receipts, ...activity.ratings].map((r) => r.agentId))].sort((a, b) =>
-    a < b ? -1 : 1,
-  );
-  const scores = await Promise.all(ids.map((id) => chain.grounded.score(id)));
+export default async function Landing() {
+  const chain = getChain();
+  const activity = chain ? await getActivity(chain) : null;
+
+  const live = activity?.ratings.filter((r) => r.live && !r.isDispute) ?? [];
+  const counters = activity
+    ? [
+        ["Agents rated", new Set(activity.ratings.map((r) => r.agentId)).size],
+        ["Paying reviewers", new Set(activity.ratings.map((r) => r.reviewer)).size],
+        ["Live ratings", live.length],
+        ["Paid through Grounded (USDC)", usdc(activity.receipts.reduce((sum, r) => sum + r.amount, 0n))],
+      ]
+    : [];
+
+  // The demo in one row: the agent whose raw ERC-8004 score is furthest above its grounded one.
+  let gap: { agentId: bigint; score: number; raw: number } | null = null;
+  if (chain && activity) {
+    const recent = [...new Set(activity.ratings.map((r) => r.agentId).reverse())].slice(0, FEATURE_WINDOW);
+    for (const s of await Promise.all(recent.map((id) => chain.grounded.score(id)))) {
+      if (s.rawScore === null || s.confidence === "none") continue;
+      if (!gap || s.rawScore - s.score > gap.raw - gap.score) gap = { agentId: s.agentId, score: s.score, raw: s.rawScore };
+    }
+  }
 
   return (
     <>
-      <h1>Agents</h1>
+      <h1>A rating counts only if the reviewer paid.</h1>
       <p className="muted">
-        The raw score is ERC-8004&apos;s average over every rating, paid or not. The grounded score is the weighted
-        median of ratings backed by an onchain payment through Grounded&apos;s router, one per reviewer.
+        ERC-8004 lets anyone post feedback about any agent for free. Grounded counts only the ratings backed by an
+        onchain payment to the agent, signed with a passkey, and computes the score in a contract nobody controls.
       </p>
-      {scores.length === 0 ? (
-        <p className="card muted">No agent has been paid through Grounded yet.</p>
-      ) : (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Agent</th>
-                <th className="num">Grounded</th>
-                <th className="num">Raw ERC-8004</th>
-                <th className="num">Reviewers</th>
-                <th className="num">Paid behind ratings (USDC)</th>
-                <th>Confidence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {scores.map((s) => (
-                <tr key={String(s.agentId)}>
-                  <td>
-                    <Link href={`/agents/${s.agentId}`}>#{String(s.agentId)}</Link>
-                  </td>
-                  <td className="num">
-                    <Grounded s={s} />
-                  </td>
-                  <td className="num">{s.rawScore ?? "–"}</td>
-                  <td className="num">{s.reviewers}</td>
-                  <td className="num">{s.paid}</td>
-                  <td>{s.confidence}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+      {activity ? (
+        <div className="scores">
+          {counters.map(([label, value]) => (
+            <div key={label} className="card">
+              <div className="muted">{label}</div>
+              <div className="big">{value}</div>
+            </div>
+          ))}
         </div>
+      ) : (
+        <NotDeployed />
       )}
-      <p className="muted">Indexed up to block {String(activity.toBlock)}. Scores are read live from the contract.</p>
+
+      {gap && gap.raw - gap.score >= 20 && (
+        <p className="card">
+          <strong>
+            <Link href={`/agents/${gap.agentId}`}>Agent #{String(gap.agentId)}</Link>
+          </strong>{" "}
+          reads <strong>{gap.raw}</strong> on ERC-8004 and <strong>{gap.score}</strong> once only paid ratings count.
+        </p>
+      )}
+
+      <p>
+        <Link href="/agents">Browse agents</Link> · <Link href="/docs/quickstart">Quickstart</Link> ·{" "}
+        <Link href="/docs/threat-model">What it does not stop</Link>
+      </p>
     </>
   );
 }
