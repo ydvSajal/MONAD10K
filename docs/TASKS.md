@@ -88,11 +88,11 @@ The dates are the plan's. Dates before today are already slipped, so treat the o
   - [ ] `apps/demo-seller`, `apps/demo-buyer`
   - Done when: buyer → 402 → pay → retry → 200, and the buyer refuses a low-score agent
 - **25 Sep — Day 9: indexer + seed data**
-  - [ ] Envio HyperIndex: `ReceiptIssued`, `ReviewerBound`, `Grounded`, `NewFeedback`, `FeedbackRevoked`; deploy to Envio Cloud
-  - [ ] `scripts/seed`: 3 demo agents; Sybil unpaid spam (raw inflated), real payers (grounded honest), one rejected owner wash-rating
+  - [!] Envio HyperIndex (needs the real deploy; explorer reads `getLogs` meanwhile, behind `apps/web/lib/events.ts`): `ReceiptIssued`, `ReviewerBound`, `Grounded`, `NewFeedback`, `FeedbackRevoked`; deploy to Envio Cloud
+  - [x] `scripts/seed` (anvil fork only; `--live` testnet mode after deploy): 3 demo agents; Sybil unpaid spam (raw inflated), real payers (grounded honest), one rejected owner wash-rating
 - **26 Sep — Day 10: explorer + playground**
-  - [ ] `apps/web`: agent list, agent page (raw vs grounded, reviewers, receipts, paid total, `ownerChangedAt`), reviewer page
-  - [ ] Playground: Privy login → drip test funds → bind passkey → pay → rate → score moves. Must work from a phone on the production domain
+  - [x] `apps/web` (Next.js) + `GET /api/v1/agents/:id/score` (F11): agent list, agent page (raw vs grounded, reviewers, receipts, paid total, `ownerChangedAt`), reviewer page
+  - [~] **Cut to roadmap (26 Sep, user):** Playground: Privy login → drip test funds → bind passkey → pay → rate → score moves. Must work from a phone on the production domain
 - **27 Sep — Day 11: docs + extras**
   - [ ] Fumadocs: Quickstart (≤10 min), SDK ref, scoring spec, contracts ref, 402 scheme, threat model, FAQ
   - [ ] `GroundedGate.sol` (`onlyTrusted`) + example

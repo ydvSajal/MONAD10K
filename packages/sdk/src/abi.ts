@@ -101,6 +101,28 @@ export const groundedReputationAbi = [
   { type: "error", name: "BadFeedback", inputs: [{ name: "feedbackIndex", type: "uint64" }] },
   { type: "error", name: "NoPasskey", inputs: [] },
   { type: "error", name: "BadSignature", inputs: [] },
+  {
+    type: "event",
+    name: "Grounded",
+    inputs: [
+      { name: "agentId", type: "uint256", indexed: true },
+      { name: "reviewer", type: "address", indexed: true },
+      { name: "receiptId", type: "uint256", indexed: true },
+      { name: "feedbackIndex", type: "uint64", indexed: false },
+      { name: "score", type: "uint8", indexed: false },
+      { name: "weight", type: "uint8", indexed: false },
+      { name: "isDispute", type: "bool", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "Swept",
+    inputs: [
+      { name: "agentId", type: "uint256", indexed: true },
+      { name: "reviewer", type: "address", indexed: true },
+      { name: "feedbackIndex", type: "uint64", indexed: false },
+    ],
+  },
 ] as const;
 
 export const reviewerRegistryAbi = [
@@ -146,6 +168,16 @@ export const reviewerRegistryAbi = [
   },
   { type: "error", name: "BadSignature", inputs: [] },
   { type: "error", name: "KeyAlreadyBound", inputs: [{ name: "keyHash", type: "bytes32" }] },
+  {
+    type: "event",
+    name: "ReviewerBound",
+    inputs: [
+      { name: "reviewer", type: "address", indexed: true },
+      { name: "keyHash", type: "bytes32", indexed: true },
+      { name: "qx", type: "uint256", indexed: false },
+      { name: "qy", type: "uint256", indexed: false },
+    ],
+  },
 ] as const;
 
 export const receiptRouterAbi = [

@@ -40,7 +40,7 @@ export interface ScoreResult {
   rawScore: number | null;
   reviewers: number;
   receipts: number;
-  /** Total paid through the router, as a decimal string with 6 decimals. */
+  /** Paid in the receipts behind grounded ratings, as a decimal string with 6 decimals. */
   paid: string;
   confidence: Confidence;
   updatedAt: Date | null;
