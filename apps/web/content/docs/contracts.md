@@ -98,12 +98,14 @@ A worked example is in `contracts/src/examples/TrustedHiring.sol`.
 
 Measured on a fork with the live precompile and registries:
 
-| Call | Gas |
+| Call | Gas used |
 |---|---|
-| `pay` | about 155k |
-| `bind` | about 158k |
-| `ground` | about 353k |
-| `sweepRevoked` | about 108k |
+| `bind` | 147,597 |
+| `pay` (after a one-off USDC `approve`, 86,716) | 301,673 |
+| `payWithAuthorization` | 341,592 |
+| `ground` (first rating / replacing one) | 342,718 / 268,281 |
+| `sweepRevoked` | 107,735 |
 
 Monad charges the gas **limit**, so the SDK sets each limit from an estimate times 1.15. About a third of
-`ground` is exclusion and feedback reads into the ERC-8004 proxies.
+`ground` is exclusion and feedback reads into the ERC-8004 proxies. The full table, and how to reproduce it,
+is in `docs/gas.md`.
