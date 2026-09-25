@@ -1,0 +1,5 @@
+{
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm --filter @grounded/sdk build && pnpm --filter @grounded/web build",
+  "framework": "nextjs"
+}

@@ -44,3 +44,5 @@ test-results/
 Thumbs.db
 .vscode/
 .idea/
+next-env.d.ts
+*.tsbuildinfo
