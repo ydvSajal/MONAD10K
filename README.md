@@ -202,14 +202,14 @@ Off chain we hold exactly one key: a **testnet drip wallet** that hands out MON/
 
 | Piece | State |
 |---|---|
-| `ReceiptRegistry`, `ReceiptRouter` | Built, merged |
-| `ReviewerRegistry`, `GroundedWebAuthn` | Built, merged — passkeys verify through the live precompile |
-| `ScoringLib`, `Erc8004Adapter`, `GroundedReputation`, `sweepRevoked` | Built, merged |
-| `GroundedGate` (`onlyTrusted`) + example | Built |
+| Contracts: receipts, router, reviewer passkeys, scoring, `sweepRevoked`, `GroundedGate` | Built, tested (64 unit/fuzz/invariant + 6 live-fork), slither clean of real findings |
 | `Deploy.s.sol` | Built, rehearsed on an anvil fork of 10143 |
-| `@grounded/sdk`: `score`, `check`, `pay`, `bindPasskey`, `rate`, `withTrust` | Built, fork-tested against the live ERC-8004 registries |
-| `@grounded/sdk/server`: `groundedPaywall` (402 scheme `grounded-router`) | Built, fork-tested end to end |
-| Testnet deploy, `deployments/10143.json` | Waiting on a funded deployer key |
-| Demo seller/buyer, indexer, explorer, docs | Planned — see `docs/TASKS.md` |
+| `@grounded/sdk` and `@grounded/sdk/server` (402 paywall) | Built, 38 tests incl. fork tests against the live ERC-8004 registries and USDC |
+| `apps/demo-seller`, `apps/demo-buyer` | Built; a buyer pays an honest agent and refuses a Sybil-inflated one, verified from a clean clone |
+| `scripts/seed`, `scripts/seed census` | Built: seed demo data on a fork; read-only census of the live registry |
+| Explorer and `GET /api/v1/agents/:id/score` (`apps/web`) | Built; reads live contracts, lists from `getLogs` |
+| Docs (`/docs`) | Written: quickstart, SDK, scoring, contracts, 402, threat model, FAQ |
+| **Testnet deploy**, `deployments/10143.json` | **Not done: waiting on a funded deployer key.** Until then the site says "not deployed yet" |
+| npm publish, hosted demo, Envio indexer, browser passkey playground | Not done. The playground is cut to the roadmap |
 
 Contracts are **unaudited and testnet-only**. Do not put real money behind them.
