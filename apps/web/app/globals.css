@@ -39,3 +39,17 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .grounded .big { color: var(--accent); }
 .warn { color: var(--warn); }
 .facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; }
+.docs { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 32px; }
+.docs nav { display: flex; flex-direction: column; gap: 6px; align-self: start; position: sticky; top: 16px; }
+.docs nav a { color: var(--muted); text-decoration: none; }
+.docs nav a[aria-current="page"] { color: var(--fg); font-weight: 600; }
+@media (max-width: 700px) { .docs { grid-template-columns: 1fr; } .docs nav { flex-direction: row; flex-wrap: wrap; position: static; } }
+.prose { min-width: 0; }
+.prose h1 { font-size: 26px; margin-top: 0; }
+.prose h2 { margin-top: 32px; }
+.prose pre { overflow-x: auto; padding: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+.prose code { background: var(--card); padding: 1px 4px; border-radius: 4px; }
+.prose pre code { background: none; padding: 0; }
+.prose table { display: block; overflow-x: auto; }
+.prose td, .prose th { white-space: normal; vertical-align: top; }
+.prose blockquote { margin: 16px 0; padding: 4px 16px; border-left: 3px solid var(--warn); color: var(--muted); }
