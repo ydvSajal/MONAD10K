@@ -282,4 +282,99 @@ contract GroundedReputationTest is Base, WebAuthnHelper {
         assertEq(grd.scoreOf(AGENT).ownerChangedAt, uint40(block.timestamp), "transfer seen on the next rating");
         assertEq(grd.lastOwnerOf(AGENT), newOwner);
     }
+
+    // ---- adversarial cases (timeline: wash rating, replay, malleability, expiry) ----
+
+    uint256 private constant P256_N = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551;
+
+    /// @dev `who` pays the agent and posts a perfect score, then tries to ground it: must be refused.
+    function _assertExcluded(address who, uint256 pk) internal {
+        usdc.mint(who, 10e6);
+        vm.startPrank(who);
+        usdc.approve(address(router), type(uint256).max);
+        uint256 id = router.pay(AGENT, address(usdc), 0.5e6);
+        vm.stopPrank();
+        reputation.setFeedback(AGENT, who, IDX, int128(100), 0, "quality");
+        _bind(who, pk);
+
+        bytes32 digest = grd.groundDigest(id, AGENT, IDX, 100, false, who, deadline);
+        WebAuthnSig memory sig = _webauthnSig(pk, rp, FLAGS_UP_UV, digest);
+        vm.prank(who);
+        vm.expectRevert(GroundedReputation.ExcludedReviewer.selector);
+        grd.ground(id, IDX, deadline, sig);
+        assertEq(grd.scoreOf(AGENT).reviewers, 0, "nothing was counted");
+    }
+
+    function test_ground_revertsForApprovedOperator() public {
+        address operator = makeAddr("operator");
+        identity.setApproved(AGENT, operator);
+        _assertExcluded(operator, 0xBEEF01);
+    }
+
+    function test_ground_revertsForOperatorForAll() public {
+        address operator = makeAddr("operatorForAll");
+        identity.setApprovalForAll(agentOwner, operator, true);
+        _assertExcluded(operator, 0xBEEF02);
+    }
+
+    function test_ground_revertsForTheAgentsOwnPayoutWallet() public {
+        _assertExcluded(agentWallet, 0xBEEF03);
+    }
+
+    function test_ground_revertsWhenSignatureIsHighS() public {
+        uint256 id = _payAndRate(payer, 0.5e6, 80, "quality");
+        bytes32 digest = grd.groundDigest(id, AGENT, IDX, 80, false, payer, deadline);
+        WebAuthnSig memory sig = _webauthnSig(PK_PAYER, rp, FLAGS_UP_UV, digest);
+        sig.s = P256_N - sig.s; // the same signature with s negated still verifies mathematically
+        assertTrue(sig.s > P256_N / 2, "test setup: s is now in the high half");
+
+        vm.prank(payer);
+        vm.expectRevert(GroundedReputation.BadSignature.selector);
+        grd.ground(id, IDX, deadline, sig);
+    }
+
+    function test_ground_revertsWhenReplayedOnAnotherChain() public {
+        uint256 id = _payAndRate(payer, 0.5e6, 80, "quality");
+        bytes32 digest = grd.groundDigest(id, AGENT, IDX, 80, false, payer, deadline);
+        WebAuthnSig memory sig = _webauthnSig(PK_PAYER, rp, FLAGS_UP_UV, digest);
+
+        vm.chainId(block.chainid + 1); // a fork or another network where the same receipt id exists
+        vm.prank(payer);
+        vm.expectRevert(GroundedReputation.BadSignature.selector);
+        grd.ground(id, IDX, deadline, sig);
+    }
+
+    function test_ground_revertsWhenUserVerificationMissing() public {
+        uint256 id = _payAndRate(payer, 0.5e6, 80, "quality");
+        bytes32 digest = grd.groundDigest(id, AGENT, IDX, 80, false, payer, deadline);
+        WebAuthnSig memory sig = _webauthnSig(PK_PAYER, rp, FLAGS_UP_ONLY, digest);
+
+        vm.prank(payer);
+        vm.expectRevert(GroundedReputation.BadSignature.selector);
+        grd.ground(id, IDX, deadline, sig);
+    }
+
+    function test_ground_revertsWhenReceiptIsOlderThanTheTtl() public {
+        uint256 id = _payAndRate(payer, 0.5e6, 80, "quality");
+        uint40 far = uint40(block.timestamp + 31 days); // the signature outlives the receipt
+        bytes32 digest = grd.groundDigest(id, AGENT, IDX, 80, false, payer, far);
+        WebAuthnSig memory sig = _webauthnSig(PK_PAYER, rp, FLAGS_UP_UV, digest);
+
+        vm.warp(block.timestamp + 30 days + 1);
+        vm.prank(payer);
+        vm.expectRevert(abi.encodeWithSelector(GroundedReputation.BadReceipt.selector, id));
+        grd.ground(id, IDX, far, sig);
+    }
+
+    function test_ground_receiptIsStillGoodOnTheLastSecondOfTheTtl() public {
+        uint256 id = _payAndRate(payer, 0.5e6, 80, "quality");
+        uint40 far = uint40(block.timestamp + 31 days);
+        bytes32 digest = grd.groundDigest(id, AGENT, IDX, 80, false, payer, far);
+        WebAuthnSig memory sig = _webauthnSig(PK_PAYER, rp, FLAGS_UP_UV, digest);
+
+        vm.warp(block.timestamp + 30 days);
+        vm.prank(payer);
+        grd.ground(id, IDX, far, sig);
+        assertEq(grd.scoreOf(AGENT).reviewers, 1);
+    }
 }

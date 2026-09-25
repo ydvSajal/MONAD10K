@@ -70,6 +70,17 @@ contract ReviewerRegistryTest is Test, WebAuthnHelper {
         reg.bind(qx, qy, p);
     }
 
+    function test_bind_revertsWhenSignatureIsHighS() public {
+        uint256 n = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551;
+        (uint256 qx, uint256 qy) = vm.publicKeyP256(PK_A);
+        WebAuthnSig memory p = _proof(PK_A, alice, FLAGS_UP_UV, rp);
+        p.s = n - p.s; // valid mathematically, but the malleable twin of the signature
+        assertTrue(p.s > n / 2, "test setup: s is in the high half");
+        vm.prank(alice);
+        vm.expectRevert(ReviewerRegistry.BadSignature.selector);
+        reg.bind(qx, qy, p);
+    }
+
     function test_bind_revertsOnWrongRpId() public {
         (uint256 qx, uint256 qy) = vm.publicKeyP256(PK_A);
         WebAuthnSig memory p = _proof(PK_A, alice, FLAGS_UP_UV, _rpIdHash("evil.example"));
