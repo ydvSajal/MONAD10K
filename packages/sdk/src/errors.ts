@@ -73,7 +73,6 @@ export class GroundFailedError extends GroundedError {
   }
 }
 
-/** A wallet client with an account is needed for anything that sends a transaction. */
 /**
  * `withTrust` paid, but the seller still answered 402. The money has moved and the receipt is
  * valid: retry later with `signAccess(receiptId, url, method)` in `X-GROUNDED-RECEIPT`.
@@ -87,6 +86,7 @@ export class PaymentNotAcceptedError extends GroundedError {
   }
 }
 
+/** A wallet client with an account is needed for anything that sends a transaction. */
 export class NoWalletError extends GroundedError {
   constructor() {
     super("this call sends a transaction: pass a walletClient with an account in the config");
