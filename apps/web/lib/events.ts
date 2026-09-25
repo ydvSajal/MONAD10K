@@ -1,4 +1,4 @@
-import { groundedReputationAbi, receiptRegistryAbi, reviewerRegistryAbi } from "@grounded/sdk";
+import { erc8004ReputationAbi, groundedReputationAbi, receiptRegistryAbi, reviewerRegistryAbi } from "@grounded/sdk";
 import { parseEventLogs, type Address, type Hex } from "viem";
 
 import type { Chain } from "./grounded";
@@ -31,10 +31,15 @@ export interface Activity {
   receipts: ReceiptRow[];
   ratings: RatingRow[];
   reviewers: Map<Address, { keyHash: Hex; tx: Hex }>;
+  /** ERC-8004 feedback that was revoked, as `agentId:client:feedbackIndex`. Ours only if a Grounded rating cites it. */
+  revoked: Set<string>;
   toBlock: bigint;
 }
 
-const abi = [...receiptRegistryAbi, ...groundedReputationAbi, ...reviewerRegistryAbi];
+const abi = [...receiptRegistryAbi, ...groundedReputationAbi, ...reviewerRegistryAbi, ...erc8004ReputationAbi];
+// Only these events are fetched. The ERC-8004 registry is busy, and the topic filter keeps its NewFeedback out.
+const WATCHED = new Set(["ReceiptIssued", "Grounded", "Swept", "ReviewerBound", "FeedbackRevoked"]);
+const events = abi.filter((x) => x.type === "event" && WATCHED.has(x.name));
 /** Public Monad RPCs cap `eth_getLogs` at about 100 blocks per call. */
 const CHUNK = BigInt(process.env.LOG_CHUNK_BLOCKS ?? 100);
 const PARALLEL = 8;
@@ -43,7 +48,7 @@ const TTL_MS = 15_000;
 // The whole scan is one accumulator that only ever moves forward: the first request reads from the
 // deploy block, every later one reads just the blocks since. Monad finalises in one slot, so there is
 // no reorg to undo.
-const data: Activity = { receipts: [], ratings: [], reviewers: new Map(), toBlock: -1n };
+const data: Activity = { receipts: [], ratings: [], reviewers: new Map(), revoked: new Set(), toBlock: -1n };
 const liveByReviewer = new Map<string, RatingRow>();
 let refreshedAt = 0;
 let inflight: Promise<Activity> | undefined;
@@ -65,11 +70,11 @@ async function refresh({ client, deployment: d }: Chain): Promise<Activity> {
   const ranges: [bigint, bigint][] = [];
   for (let from = start; from <= head; from += CHUNK) ranges.push([from, from + CHUNK - 1n < head ? from + CHUNK - 1n : head]);
 
-  const address = [d.receiptRegistry, d.groundedReputation, d.reviewerRegistry];
+  const address = [d.receiptRegistry, d.groundedReputation, d.reviewerRegistry, d.erc8004Reputation];
   const scanned: Awaited<ReturnType<typeof client.getLogs>>[] = [];
   for (let i = 0; i < ranges.length; i += PARALLEL) {
     scanned.push(
-      ...(await Promise.all(ranges.slice(i, i + PARALLEL).map(([fromBlock, toBlock]) => client.getLogs({ address, fromBlock, toBlock })))),
+      ...(await Promise.all(ranges.slice(i, i + PARALLEL).map(([fromBlock, toBlock]) => client.getLogs({ address, events: events as never, fromBlock, toBlock })))),
     );
   }
 
@@ -107,5 +112,8 @@ function fold(log: ReturnType<typeof parseEventLogs<typeof abi, false>>[number])
     if (prev) prev.live = false;
   } else if (log.eventName === "ReviewerBound") {
     data.reviewers.set(log.args.reviewer!, { keyHash: log.args.keyHash!, tx: at.tx });
+  } else if (log.eventName === "FeedbackRevoked") {
+    const a = log.args;
+    data.revoked.add(`${a.agentId}:${a.clientAddress!.toLowerCase()}:${a.feedbackIndex}`);
   }
 }
