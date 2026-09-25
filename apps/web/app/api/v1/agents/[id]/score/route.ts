@@ -1,17 +1,27 @@
 import { getChain } from "../../../../../../lib/grounded";
+import { retryAfter } from "../../../../../../lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 
-// Rate limiting is a Vercel Firewall rule on /api/v1/*, not code here.
-const CACHE = "public, s-maxage=30, stale-while-revalidate=60";
+const CACHE = "public, s-maxage=15, stale-while-revalidate=30";
 
-const json = (body: unknown, status = 200) =>
+const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(body, (_, v) => (typeof v === "bigint" ? v.toString() : v)), {
     status,
-    headers: { "content-type": "application/json", "cache-control": status === 200 ? CACHE : "no-store" },
+    headers: {
+      "content-type": "application/json",
+      "cache-control": status === 200 ? CACHE : "no-store",
+      // A public read-only score: any page or agent may call it.
+      "access-control-allow-origin": "*",
+      ...extra,
+    },
   });
 
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const wait = retryAfter(ip);
+  if (wait > 0) return json({ error: "rate limit: 60 requests per minute" }, 429, { "retry-after": String(wait) });
+
   const { id } = await params;
   if (!/^\d{1,78}$/.test(id)) return json({ error: "agent id must be a non-negative integer" }, 400);
   const chain = getChain();

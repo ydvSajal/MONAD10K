@@ -17,6 +17,8 @@ export interface Addresses {
 export interface GroundedConfig {
   chain: ChainName;
   rpcUrl?: string;
+  /** Tried when `rpcUrl` fails or is rate limited, e.g. an Alchemy or QuickNode Monad testnet URL. */
+  fallbackRpcUrl?: string;
   indexerUrl?: string;
   /** Required for writes. */
   walletClient?: WalletClient;

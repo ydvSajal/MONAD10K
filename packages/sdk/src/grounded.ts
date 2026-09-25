@@ -3,6 +3,7 @@ import {
   ContractFunctionRevertedError,
   createPublicClient,
   erc20Abi,
+  fallback,
   formatUnits,
   http,
   isAddressEqual,
@@ -93,7 +94,9 @@ export class Grounded {
       config.publicClient ??
       (createPublicClient({
         chain,
-        transport: http(config.rpcUrl ?? chain.rpcUrls.default.http[0]),
+        transport: config.fallbackRpcUrl
+          ? fallback([http(config.rpcUrl ?? chain.rpcUrls.default.http[0]), http(config.fallbackRpcUrl)])
+          : http(config.rpcUrl ?? chain.rpcUrls.default.http[0]),
       }) as PublicClient);
     this.addresses = { ...knownAddresses[config.chain], ...config.addresses };
   }
