@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
+    "census": "tsx src/census.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

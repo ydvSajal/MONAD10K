@@ -33,58 +33,58 @@ dead ends. Pull real ones from these, then fill the table:
 > The `Registered` event trick is the best of these: it is a list of teams that have *already*
 > registered an ERC-8004 agent on Monad testnet. They are, by definition, the people this is for.
 
-## Target list — 21 real teams, pulled off chain (23 Sep)
+## Target list: registry census (refreshed 26 Sep)
 
-Enumerated `ownerOf` / `getAgentWallet` for agent ids 1-53 on the live ERC-8004 identity registry.
-These are addresses that have **already registered an agent on Monad testnet**: the exact audience.
+Read from the live ERC-8004 identity registry (`0x8004…BD9e`) with `pnpm --filter @grounded/seed census`
+(read-only, about a minute). It replaces the 23 Sep list, which covered 53 agents; the registry now
+holds **1,930**.
 
-You still have to find the human behind each address. The practical routes: search the address on the
-hackathon Discord and on X, check whether it resolves to an ENS or a known deployer, and look at the
-agent's `tokenURI` / `agentURI`, which often carries a name, website or contact.
+**Do not read 1,930 as 1,930 teams.** What the data says:
 
-"Payable" means the agent has a payout wallet set, so `pay()` works today. A team marked **no wallet**
-cannot receive a payment until they call `setAgentWallet` — see the note below, it is also a warm
-opener ("your agent cannot be paid, here is the one-liner to fix it").
+| | |
+|---|---|
+| Agents / distinct owner addresses | 1,930 / 185 |
+| Minted by 10 owners whose `agentURI` all point at one GitHub test-script repo (`…/mm-8004-contract/script/test-agents`) | 1,617 (84%) |
+| Owned by `0x…0001` (26 agents, ids 919-957) | 26 |
+| **Everything else** | **287 agents, 174 owners** |
+| Agents with any ERC-8004 feedback | 84 (134 feedback clients in total, at most 12 on one agent) |
 
-| # | Owner address | Agents | Payable | Contact | Status | Next step |
-|---|---|---|---|---|---|---|
-| 1 | `0x0fd6B881b208d2b0b7Be11F1eB005A2873dD5D2e` | 27-42, 49-53 (19) | no wallet |  | not contacted | biggest operator on the registry — start here |
-| 2 | `0x567bDc4086eFc460811798d1075a21359E34072d` | 14-17 | yes |  | not contacted | only owner using distinct payout wallets — sophisticated |
-| 3 | `0xFcCf1a167790d6657Eed65173DB9d4eB546AB7E8` | 23, 46-48 | no wallet |  | not contacted |  |
-| 4 | `0x949a537aFdcc2958edeC473Ce8C040E31EA6EE2B` | 18-20 | yes |  | not contacted |  |
-| 5 | `0xf043B0d473a2EDD7C5D6F4d931334096B77A7EDC` | 2, 3 | yes |  | not contacted |  |
-| 6 | `0xa05Dd22AB6494Cf7743b60F991fE48A817e28Fa2` | 4, 5 | yes |  | not contacted |  |
-| 7 | `0xC799F507cB3257d9332719D93f0311377803eaB1` | 6, 7 | yes |  | not contacted |  |
-| 8 | `0x72a4d3cC389121c911B3A72BD4d495D3D640ad00` | 11, 12 | yes |  | not contacted |  |
-| 9 | `0x528110a09322B47409bCec7DB3484Be94e88b0AD` | 44, 45 | no wallet |  | not contacted |  |
-| 10 | `0xf50B97A486323d51f5b75749E27f7784C32FCcAf` | 30, 51 | no wallet |  | not contacted |  |
-| 11 | `0x133603465aDdE7C39fa0E6E34b264E1573e1FD08` | 1 | yes |  | not contacted | agent 1, our fork tests already pay it |
-| 12 | `0xBa01864b0303d00a112E2F6a6D3B2E402D903620` | 8 | yes |  | not contacted |  |
-| 13 | `0x1F36B4c388CA19Ddb5b90DcF6E8f8309652Ab3dE` | 9 | yes |  | not contacted |  |
-| 14 | `0x6cCBe5f5Cf80f66a0ef286287e2A75e4aFec7Fbf` | 10 | yes |  | not contacted |  |
-| 15 | `0xb6E8B2692cdc3A31280DCa8E9C8b88bb5e436f24` | 13 | yes |  | not contacted |  |
-| 16 | `0xcb8a98250c4471c21011dc979b181D38b5A103c7` | 22 | yes |  | not contacted |  |
-| 17 | `0xab448e3E475d1562C027bE9670352119444F4880` | 43 | yes |  | not contacted |  |
-| 18 | `0xE08f2c466b1Dbb59ce4858945C39502d5F1b1fC4` | 21 | no wallet |  | not contacted |  |
-| 19 | `0xcFeF3fef61AE6dbBaE4B588204e38CBEaDD4c963` | 24 | no wallet |  | not contacted |  |
-| 20 | `0x527C32204369806Ba55721Ea200aC7B12c387409` | 25 | no wallet |  | not contacted |  |
-| 21 | `0xB2d38d0307564d234C861716955ee2887c4e778e` | 26 | no wallet |  | not contacted |  |
+Two consequences:
+
+1. **The "biggest operator on the registry, start here" row in the old list was wrong.** `0x0fd6…5D2e` (548
+   agents) and six other big owners are one team's load test. One contact covers all of them, and none
+   is a prospect. Treat them as a single low-priority lead.
+2. **Real distinct teams are far fewer than 174.** Many teams register from many addresses (the Yiling
+   agents alone use 18). My guess is 40-80 real teams; I cannot verify it from chain data.
+
+Payout wallets: 1,026 agents have one, 904 do not. But **867 of the 904 belong to the test-script
+minter.** Of the other 313 agents only 37 lack a wallet, and 206 of the 214 real agents registered since
+id 1000 have one (983 wallets equal the owner address, so newer registrations appear to default the
+wallet to the owner). The "no payout wallet" opener below now fits only old agents; the payout-wallet
+fallback decision (Q9) is much less pressing than the 23 Sep census suggested.
+
+### Where to start: named projects among the 287
+
+Names come from each agent's own metadata (`agentURI`), so they are claims, not verified identities.
+"Feedback" is the number of those agents that already have ERC-8004 feedback.
+
+| Cluster (from metadata) | Owners | Agents | Feedback | Ids | Why it matters |
+|---|---|---|---|---|---|
+| Yiling Analyst Agent, `yilingprotocol.com` | 18 | 32 | 17 | 1720-1757 | Most feedback of any team; one team, many addresses. Pick one contact |
+| `mandate.ibxlab.xyz` | 11 | 48 | 5 | 1831-1898 | Biggest real deployment |
+| "Outside agent (e2e)" | 9 | 9 | 4 | 1899-1926 | Look like other hackathon teams testing end to end |
+| `agenttrust.local`, `raterproof.xyz`, TrustLens, `crosscheck.io`, `verdict.invalid`, `backstop-smoky.vercel.app` | 1-3 each | 1-9 each | some | 1758-1930 | Names suggest trust or rating projects: competitors or integrators, check before pitching |
+| Builder-A, GlassAgent, Veridex, Spark Harness, Data Market Broker, Merchant Wm1 | 1-4 each | 2-5 each | some | various | Single named agents, easy first messages |
+| `Sim-Agent-*` | 26 | 26 | 6 | 166-307 | Simulation agents from one script: one low-priority lead |
+
+Find the person behind a cluster before messaging (its site, the hackathon Discord, X) and log every contact in the Log table below.
 
 Status values: `not contacted` · `contacted` · `replied` · `said yes` · `SDK installed` · `live` · `declined`
 
-Refresh the census any time:
+### The "your agent cannot be paid" opener (old agents only)
 
-```bash
-for i in $(seq 1 80); do
-  cast call 0x8004A818BFB912233c491871b3d84c89A494BD9e "ownerOf(uint256)(address)" $i \
-    --rpc-url https://testnet-rpc.monad.xyz
-done
-```
-
-### The "your agent cannot be paid" opener
-
-More than half of the registered agents have no payout wallet, so nobody can pay them at all. That is
-a genuinely useful thing to tell someone, and it opens the conversation without a pitch:
+Only agents from the early registry era lack a payout wallet. If one of them is a real team, this still
+opens a conversation without a pitch:
 
 > Your agent on the Monad ERC-8004 registry has no payout wallet set, so `getAgentWallet` returns
 > zero and payments to it revert. Fix is one call, `setAgentWallet`, signed by the wallet you want
