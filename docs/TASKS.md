@@ -94,7 +94,7 @@ The dates are the plan's. Dates before today are already slipped, so treat the o
   - [x] `apps/web` (Next.js) + `GET /api/v1/agents/:id/score` (F11): agent list, agent page (raw vs grounded, reviewers, receipts, paid total, `ownerChangedAt`), reviewer page
   - [~] **Cut to roadmap (26 Sep, user):** Playground: Privy login → drip test funds → bind passkey → pay → rate → score moves. Must work from a phone on the production domain
 - **27 Sep — Day 11: docs + extras**
-  - [ ] Fumadocs: Quickstart (≤10 min), SDK ref, scoring spec, contracts ref, 402 scheme, threat model, FAQ
+  - [x] Docs (plain markdown rendered by `marked` at `/docs`, not Fumadocs; see CLAUDE.md spec delta): Quickstart (≤10 min), SDK ref, scoring spec, contracts ref, 402 scheme, threat model, FAQ
   - [ ] `GroundedGate.sol` (`onlyTrusted`) + example
   - [ ] Stretch, cut first: MCP tool `grounded_check` (allowed only after 27 Sep per rule 10)
 - **28 Sep — Day 12: freeze**
