@@ -128,7 +128,8 @@ Honest limits:
 | `contracts/abi/erc8004/` | ABIs of the deployed ERC-8004 registries, selector-verified against testnet bytecode |
 | `packages/sdk/` | `@grounded/sdk`: score/check, pay/rate, `withTrust`, and `groundedPaywall` (`/server`) |
 | `apps/demo-seller/` | Hono agent service charging per request through the 402 paywall |
-| `apps/demo-buyer/` | Script agent that pays a 402 seller only if its agent passes a trust policy |
+| `apps/demo-buyer/` | Script agent that pays a 402 seller only if its agent passes a trust policy; `agent` mode lets a language model choose among sellers inside limits it cannot change |
+| `packages/mcp/` | `@grounded/mcp`: read-only MCP server (`grounded_score`, `grounded_check`) so any AI agent can ask before it pays |
 | `grounded-docs/` | PRD, TRD, system architecture, timeline, deployment, integrations |
 | `docs/BUILDLOG.md`, `docs/TASKS.md` | Daily log, and what is left |
 

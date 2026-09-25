@@ -6,11 +6,16 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "agent": "tsx src/agent.ts",
+    "agent:check": "tsx src/agent.check.ts"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^2.0.78",
     "@grounded/sdk": "workspace:*",
-    "viem": "^2.21.0"
+    "ai": "^6.0.291",
+    "viem": "^2.21.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^22.7.0",

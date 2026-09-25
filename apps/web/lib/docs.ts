@@ -10,6 +10,7 @@ export const DOCS = [
   { slug: "scoring", title: "Scoring spec" },
   { slug: "contracts", title: "Contracts" },
   { slug: "402-scheme", title: "402 scheme" },
+  { slug: "ai-agents", title: "AI agents" },
   { slug: "threat-model", title: "Threat model" },
   { slug: "faq", title: "FAQ" },
 ] as const;
