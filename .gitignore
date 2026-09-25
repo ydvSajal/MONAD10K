@@ -46,3 +46,4 @@ Thumbs.db
 .idea/
 next-env.d.ts
 *.tsbuildinfo
+census.json
