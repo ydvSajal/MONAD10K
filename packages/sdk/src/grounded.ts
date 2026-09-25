@@ -9,6 +9,7 @@ import {
   parseEventLogs,
   parseUnits,
   toHex,
+  zeroAddress,
   zeroHash,
 } from "viem";
 import type { Abi, Account, Address, Hex, PublicClient, TransactionReceipt, WalletClient } from "viem";
@@ -34,6 +35,7 @@ import {
   NoPasskeyBoundError,
   NotDeployedError,
   NoWalletError,
+  PaymentNotAcceptedError,
   ReceiptAlreadyUsedError,
   UntrustedAgentError,
 } from "./errors.js";
@@ -66,6 +68,12 @@ const TAG_QUALITY = "quality";
 const GAS_HEADROOM_PCT = 115n;
 /** How long an EIP-3009 payment authorization stays valid. */
 const AUTHORIZATION_TTL_SEC = 3600n;
+/**
+ * After paying, how often `withTrust` re-sends a request the seller still answers with 402. The
+ * seller reads the receipt from its own RPC node, which can be a block behind ours.
+ */
+const PAID_RETRIES = 3;
+const PAID_RETRY_DELAY_MS = 500;
 const EMPTY_SIG: WebAuthnSig = {
   authenticatorData: "0x",
   clientDataJSON: "",
@@ -185,11 +193,18 @@ export class Grounded {
     if (score.score < p.minScore) {
       reasons.push(`score ${score.score}, policy wants ${p.minScore}`);
     }
-    if (p.ratingsAfterOwnerChange === false && score.ownerChangedAt) {
-      reasons.push(
-        `agent changed owner at ${score.ownerChangedAt.toISOString()} and the policy does not ` +
-          `accept ratings earned before a transfer`,
-      );
+    if (p.ratingsAfterOwnerChange === false) {
+      if (score.ownerChangedAt) {
+        reasons.push(
+          `agent changed owner at ${score.ownerChangedAt.toISOString()} and the policy does not ` +
+            `accept ratings earned before a transfer`,
+        );
+      } else if (await this.soldSinceLastRating(score.agentId)) {
+        reasons.push(
+          "agent changed owner since its last grounded rating and the policy does not accept " +
+            "ratings earned before a transfer",
+        );
+      }
     }
 
     return { pass: reasons.length === 0, reasons, score };
@@ -225,7 +240,8 @@ export class Grounded {
    * A `fetch` that answers a `grounded-router` 402 by itself: check the agent against `policy`,
    * pay through the router, and retry with a signed receipt. An agent that fails the policy throws
    * `UntrustedAgentError` and is paid nothing. Any other response, including a 402 in some other
-   * scheme, is returned untouched.
+   * scheme, is returned untouched. If the seller still answers 402 after payment and a few retries,
+   * `PaymentNotAcceptedError` carries the receipt id so the caller can retry later.
    */
   withTrust(f: typeof fetch, options: TrustPolicy & PayOptions): typeof fetch {
     const { maxAmount, mode } = payOptionsSchema.parse(options);
@@ -249,9 +265,19 @@ export class Grounded {
       }
       const { receiptId } = await this.payValue(agentId, offer.asset, amount, mode);
 
-      const headers = new Headers(retry.headers);
-      headers.set(RECEIPT_HEADER, await this.signAccess(receiptId, retry.url, retry.method));
-      return f(new Request(retry, { headers }));
+      // The seller marks a receipt used only when it serves, so re-sending after a 402 is safe.
+      for (let attempt = 0; ; attempt++) {
+        const req = retry.clone();
+        const headers = new Headers(req.headers);
+        headers.set(RECEIPT_HEADER, await this.signAccess(receiptId, req.url, req.method));
+        const paid = await f(new Request(req, { headers }));
+        if (paid.status !== 402) return paid;
+        if (attempt === PAID_RETRIES) {
+          const body = (await paid.json().catch(() => null)) as PaymentRequired | null;
+          throw new PaymentNotAcceptedError(receiptId, body?.error ?? "402 with no reason");
+        }
+        await new Promise((r) => setTimeout(r, PAID_RETRY_DELAY_MS * (attempt + 1)));
+      }
     };
   }
 
@@ -310,12 +336,21 @@ export class Grounded {
         this.publicClient.getChainId(),
       ]);
       const validBefore = block.timestamp + AUTHORIZATION_TTL_SEC;
-      const nonce = toHex(crypto.getRandomValues(new Uint8Array(32)));
+      const salt = toHex(crypto.getRandomValues(new Uint8Array(32)));
+      // The router derives the nonce from the agent, so the authorization cannot pay anyone else.
+      const nonce = await this.publicClient.readContract({
+        address: router,
+        abi: receiptRouterAbi,
+        functionName: "authorizationNonce",
+        args: [agentId, salt],
+      });
+      // Payee is the router, not the agent: only the payee can redeem a ReceiveWithAuthorization,
+      // so nobody can front-run it straight into the token and leave the payer without a receipt.
       const signature = await wallet.signTypedData({
         account,
         domain: { name, version, chainId, verifyingContract: token },
         types: {
-          TransferWithAuthorization: [
+          ReceiveWithAuthorization: [
             { name: "from", type: "address" },
             { name: "to", type: "address" },
             { name: "value", type: "uint256" },
@@ -324,8 +359,8 @@ export class Grounded {
             { name: "nonce", type: "bytes32" },
           ],
         },
-        primaryType: "TransferWithAuthorization",
-        message: { from: account.address, to, value, validAfter: 0n, validBefore, nonce },
+        primaryType: "ReceiveWithAuthorization",
+        message: { from: account.address, to: router, value, validAfter: 0n, validBefore, nonce },
       });
       receipt = await this.send(router, receiptRouterAbi, "payWithAuthorization", [
         agentId,
@@ -334,7 +369,7 @@ export class Grounded {
         value,
         0n,
         validBefore,
-        nonce,
+        salt,
         signature,
       ]);
     } else {
@@ -478,6 +513,25 @@ export class Grounded {
     const wallet = this.config.walletClient;
     if (!wallet?.account) throw new NoWalletError();
     return { wallet, account: wallet.account };
+  }
+
+  /** True when the agent's owner now differs from the owner at its last grounded rating. */
+  private async soldSinceLastRating(agentId: bigint): Promise<boolean> {
+    const [lastOwner, owner] = await Promise.all([
+      this.publicClient.readContract({
+        address: this.address("groundedReputation"),
+        abi: groundedReputationAbi,
+        functionName: "lastOwnerOf",
+        args: [agentId],
+      }),
+      this.publicClient.readContract({
+        address: this.address("erc8004Identity"),
+        abi: erc8004IdentityAbi,
+        functionName: "ownerOf",
+        args: [agentId],
+      }),
+    ]);
+    return lastOwner !== zeroAddress && !isAddressEqual(lastOwner, owner);
   }
 
   private receipt(receiptId: bigint) {

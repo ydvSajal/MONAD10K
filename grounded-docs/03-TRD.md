@@ -68,9 +68,9 @@ struct Score {
   2. `to = identity.getAgentWallet(agentId)`; revert `NoAgentWallet(agentId)` if zero.
   3. `SafeERC20.safeTransferFrom(msg.sender, to, value)` — payer = `msg.sender`.
   4. `receipts.issue(...)`, emit `ReceiptIssued`.
-- `payWithAuthorization(agentId, token, from, value, validAfter, validBefore, nonce, sig)`
+- `payWithAuthorization(agentId, token, from, value, validAfter, validBefore, salt, sig)`
   1. same checks; `to = getAgentWallet(agentId)`.
-  2. call `IERC3009(token).transferWithAuthorization(from, to, value, validAfter, validBefore, nonce, v, r, s)` (split `sig`). The payer signed `to`, so a wrong wallet simply reverts in the token.
+  2. call `IERC3009(token).receiveWithAuthorization(from, router, value, validAfter, validBefore, authorizationNonce(agentId, salt), v, r, s)` (split `sig`), then forward `value` to `to`. The payer signs a *Receive* authorization with the router as payee: USDC lets only the payee redeem it, so it cannot be front-run straight into the token (money moved, no receipt). `authorizationNonce = keccak256(abi.encode(agentId, salt))`, so it cannot be relayed to another agent. The router holds the funds only within the call.
   3. receipt payer = `from` (not `msg.sender`).
 - Router never holds balances. Add invariant test: token balance of router == 0 always.
 - Follow checks-effects-interactions; receipt issued after successful transfer in the same tx.

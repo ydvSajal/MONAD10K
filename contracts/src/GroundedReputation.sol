@@ -184,6 +184,12 @@ contract GroundedReputation is EIP712, IGroundedReputation {
         return (live.bucket, live.weight, live.feedbackIndex, live.isDispute, live.exists);
     }
 
+    /// @notice The owner seen at the agent's last grounded rating. `ownerChangedAt` only moves on the
+    ///      next rating, so a consumer compares this with `ownerOf` to catch a sale since then.
+    function lastOwnerOf(uint256 agentId) external view returns (address) {
+        return _agents[agentId].lastOwner;
+    }
+
     function disputeCount(uint256 agentId) external view returns (uint32) {
         return _agents[agentId].disputes;
     }

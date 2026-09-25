@@ -62,6 +62,13 @@ export const groundedReputationAbi = [
   },
   {
     type: "function",
+    name: "lastOwnerOf",
+    stateMutability: "view",
+    inputs: [{ name: "agentId", type: "uint256" }],
+    outputs: [{ type: "address" }],
+  },
+  {
+    type: "function",
     name: "ground",
     stateMutability: "nonpayable",
     inputs: [
@@ -164,10 +171,20 @@ export const receiptRouterAbi = [
       { name: "value", type: "uint256" },
       { name: "validAfter", type: "uint256" },
       { name: "validBefore", type: "uint256" },
-      { name: "nonce", type: "bytes32" },
+      { name: "salt", type: "bytes32" },
       { name: "signature", type: "bytes" },
     ],
     outputs: [{ name: "receiptId", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "authorizationNonce",
+    stateMutability: "pure",
+    inputs: [
+      { name: "agentId", type: "uint256" },
+      { name: "salt", type: "bytes32" },
+    ],
+    outputs: [{ type: "bytes32" }],
   },
   { type: "error", name: "TokenNotAllowed", inputs: [{ name: "token", type: "address" }] },
   { type: "error", name: "AmountBelowMinimum", inputs: [{ name: "normalised6dp", type: "uint256" }] },

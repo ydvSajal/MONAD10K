@@ -81,7 +81,8 @@ export interface PayArgs {
   token?: Address;
   /**
    * `transfer` approves the router and calls `pay` (two transactions the first time).
-   * `authorization` signs an EIP-3009 authorization and calls `payWithAuthorization` (one).
+   * `authorization` signs an EIP-3009 `ReceiveWithAuthorization` to the router and calls
+   * `payWithAuthorization` (one). Only the router can redeem it, and only for this agent.
    */
   mode?: PayMode;
 }

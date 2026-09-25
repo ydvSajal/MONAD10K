@@ -52,9 +52,12 @@ contract ReceiptRouter {
         return _issue(agentId, msg.sender, token, value);
     }
 
-    /// @notice Pay with an EIP-3009 authorization signed by `from`; anyone may relay it.
-    /// @dev `from` signed `to`, so a wrong recipient reverts inside the token. The receipt's
-    ///      payer is `from`, never the relayer.
+    /// @notice Pay with an EIP-3009 `ReceiveWithAuthorization` signed by `from`; anyone may relay it.
+    /// @dev The authorization names this router as payee, and the token lets only the payee redeem
+    ///      it, so it cannot be front-run straight into the token (money moved, no receipt). Its nonce
+    ///      is `authorizationNonce(agentId, salt)`, so it cannot be relayed to a different agent.
+    ///      Funds pass through within this call; the router still holds nothing afterwards. The
+    ///      receipt's payer is `from`, never the relayer.
     function payWithAuthorization(
         uint256 agentId,
         address token,
@@ -62,16 +65,19 @@ contract ReceiptRouter {
         uint256 value,
         uint256 validAfter,
         uint256 validBefore,
-        bytes32 nonce,
+        bytes32 salt,
         bytes calldata signature
     ) external returns (uint256 receiptId) {
         address to = _check(agentId, token, value);
-        if (signature.length != 65) revert BadSignatureLength(signature.length);
-        bytes32 r = bytes32(signature[0:32]);
-        bytes32 s = bytes32(signature[32:64]);
-        uint8 v = uint8(signature[64]);
-        IERC3009(token).transferWithAuthorization(from, to, value, validAfter, validBefore, nonce, v, r, s);
+        bytes32 nonce = authorizationNonce(agentId, salt);
+        _receive(token, from, value, validAfter, validBefore, nonce, signature);
+        IERC20(token).safeTransfer(to, value);
         return _issue(agentId, from, token, value);
+    }
+
+    /// @notice The EIP-3009 nonce a payer signs to pay `agentId` through `payWithAuthorization`.
+    function authorizationNonce(uint256 agentId, bytes32 salt) public pure returns (bytes32) {
+        return keccak256(abi.encode(agentId, salt));
     }
 
     /// @notice Token base units expressed with 6 decimals. Used for the floor, weights and totals.
@@ -90,6 +96,31 @@ contract ReceiptRouter {
         to = identity.getAgentWallet(agentId);
         if (to == address(0)) revert NoAgentWallet(agentId);
         if (to == address(this)) revert InvalidRecipient(to);
+    }
+
+    /// @dev Own frame for the signature split, to keep `payWithAuthorization` off the stack limit.
+    function _receive(
+        address token,
+        address from,
+        uint256 value,
+        uint256 validAfter,
+        uint256 validBefore,
+        bytes32 nonce,
+        bytes calldata signature
+    ) private {
+        if (signature.length != 65) revert BadSignatureLength(signature.length);
+        IERC3009(token)
+            .receiveWithAuthorization(
+                from,
+                address(this),
+                value,
+                validAfter,
+                validBefore,
+                nonce,
+                uint8(signature[64]),
+                bytes32(signature[0:32]),
+                bytes32(signature[32:64])
+            );
     }
 
     function _issue(uint256 agentId, address payer, address token, uint256 value) private returns (uint256) {
