@@ -18,9 +18,14 @@ You need Node 20+, pnpm 9 and [Foundry](https://getfoundry.sh). On Windows, run 
 
 ```bash
 git clone https://github.com/ydvSajal/MONAD10K.git && cd MONAD10K
+git submodule update --init          # forge-std and OpenZeppelin; not --recursive, see below
 pnpm install
 pnpm --filter @grounded/sdk build
 ```
+
+The contracts import OpenZeppelin as a git submodule, so `forge` fails without that second line. Do not use
+`--recurse-submodules`: it also fetches OpenZeppelin's own test libraries, which we never import, and their
+long paths break the clone on Windows.
 
 ## 2. Start a chain with Grounded on it
 

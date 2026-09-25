@@ -3,14 +3,10 @@
 Ready-to-paste text for the Monad Metropolis entry. Placeholder now, final on 12 Oct.
 Keep this file in sync with what was actually submitted — note the date each time.
 
-- **Repo:** https://github.com/ydvSajal/MONAD10K- (public)
+- **Repo:** https://github.com/ydvSajal/MONAD10K (currently **private**: must be public or shared with the judge address before submitting)
 - **Judge access to grant:** `metropolis@hackathon.monad.xyz`
 - **Chain:** Monad Testnet, 10143
 - **Submitted:** _not yet — placeholder pending_
-
-> Repo name: `MONAD10K-` reads like a scratch repo, trailing dash included. Renaming it to
-> `grounded` costs one click and GitHub keeps the old URL redirecting. Worth doing before
-> judges ever see it.
 
 ## Name
 
@@ -50,16 +46,17 @@ Consumers read one function, `meets(agentId, minScore, minReviewers)`, or one SD
 
 ## Tracks / bounties to tick
 
-Fill in against the official list when submitting. Candidates, only where genuinely load-bearing
-(ground rule 12): Monad main track, Envio (indexer), Privy (playground login). Do **not** tick a
-sponsor whose SDK is not actually carrying weight in the product.
+Fill in against the official list when submitting. Only where genuinely load-bearing
+(ground rule 12): **Monad main track.** As of 26 Sep **Envio is not built** (the explorer reads `getLogs`
+and the indexer needs a real deploy) and **Privy is not used** (the playground was cut), so tick neither
+unless that changes. Do **not** tick a sponsor whose SDK is not actually carrying weight in the product.
 
 ## Links
 
 | What | URL |
 |---|---|
-| Repo | https://github.com/ydvSajal/MONAD10K- |
-| Web app | https://monad-10-k.vercel.app (placeholder until Day 10) |
+| Repo | https://github.com/ydvSajal/MONAD10K |
+| Web app + docs | https://monad-10-k.vercel.app (explorer and `/docs`; says "not deployed yet" until the testnet deploy) |
 | Demo video | _Ship week, 7 Oct_ |
 | Pitch video | _Ship week, 8 Oct_ |
 | Contract addresses | _after deploy; will live in `deployments/10143.json`_ |
@@ -70,3 +67,8 @@ At placeholder time the contracts are built and tested but not yet deployed. Say
 than implying a live deployment. The honest version still sounds strong: passkey verification is
 proven against the live precompile, and the full rating path is tested against the live ERC-8004
 registries on testnet.
+
+**Update 26 Sep:** the SDK, 402 paywall, demo seller/buyer, seed data, explorer, read API and docs are all
+built, and the full demo (a buyer pays an honest agent and refuses a Sybil-inflated one, raw ERC-8004 87 vs
+grounded 20) was run from a clean clone on a fork of Monad testnet. Still true: **nothing is deployed to
+testnet yet**, the SDK is not on npm, and the passkey playground was cut. Say all three.

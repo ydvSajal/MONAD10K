@@ -6,6 +6,8 @@ import { cors } from "hono/cors";
 import { Grounded } from "@grounded/sdk";
 import { groundedPaywall, memoryReceiptStore } from "@grounded/sdk/server";
 
+import { postgresReceiptStore } from "./pgStore.js";
+
 const env = process.env;
 const agentId = env.SELLER_AGENT_ID;
 if (!agentId) throw new Error("SELLER_AGENT_ID is required: the ERC-8004 agent this seller is paid as");
@@ -24,9 +26,11 @@ app.use("*", cors());
 
 app.get("/health", (c) => c.json({ ok: true, agentId, price }));
 
-// ponytail: memory store forgets used receipts on restart, so one receipt can buy twice across restarts.
-// Swap in a Postgres ReceiptStore (DATABASE_URL) before this runs anywhere but a laptop.
-app.get("/insight", groundedPaywall({ grounded, agentId, price, store: memoryReceiptStore() }), (c) =>
+// ponytail: without DATABASE_URL the store is in memory and forgets used receipts on restart, so one
+// receipt can buy twice across restarts. Set DATABASE_URL (Postgres) for anything but a laptop.
+const store = env.DATABASE_URL ? await postgresReceiptStore(env.DATABASE_URL) : memoryReceiptStore();
+
+app.get("/insight", groundedPaywall({ grounded, agentId, price, store }), (c) =>
   c.json({
     agentId,
     insight: "Paid for by an onchain receipt. Rate this answer with the same receipt to count toward my score.",
