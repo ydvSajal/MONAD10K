@@ -38,7 +38,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .big { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .grounded .big { color: var(--accent); }
 .warn { color: var(--warn); }
-.facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 16px; }
+.facts span { overflow-wrap: anywhere; }
 .docs { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 32px; }
 .docs nav { display: flex; flex-direction: column; gap: 6px; align-self: start; position: sticky; top: 16px; }
 .docs nav a { color: var(--muted); text-decoration: none; }
@@ -53,3 +54,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .prose table { display: block; overflow-x: auto; }
 .prose td, .prose th { white-space: normal; vertical-align: top; }
 .prose blockquote { margin: 16px 0; padding: 4px 16px; border-left: 3px solid var(--warn); color: var(--muted); }
+button { font: inherit; padding: 6px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--fg); cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+input { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); max-width: 100%; }
