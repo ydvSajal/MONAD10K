@@ -7,6 +7,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "census": "tsx src/census.ts",
+    "gas": "tsx src/gas.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

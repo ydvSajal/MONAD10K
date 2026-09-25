@@ -32,7 +32,7 @@ Legend: `[x]` done · `[ ]` open · `[!]` overdue or blocked · `[~]` partly don
 - [ ] Fuzz `ScoringLib`: median vs reference sort
 - [ ] End-to-end forge test: register → pay → giveFeedback → bind → ground → `scoreOf`
 - [ ] Invariants: receipt consumed once; histogram mass == sum of live weights
-- [ ] `forge test --gas-report`: record `ground` gas (A9) in TRD. **Checkpoint: ≤ ~250k**
+- [x] Gas recorded in `docs/gas.md` from real fork transactions (`ground` 343k, over the ≤ ~250k checkpoint; deferred by user)
 - [ ] `Deploy.s.sol`; testnet deploy; verify sources; write `deployments/10143.json`
 
 ### Day 3 leftovers
@@ -63,7 +63,7 @@ Legend: `[x]` done · `[ ]` open · `[!]` overdue or blocked · `[~]` partly don
 |---|---|---|---|
 | 17 Sep | ERC-8004 deployed? | [x] Yes | — |
 | 21 Sep | WebAuthn fork test passing? | [x] Yes | — |
-| 21 Sep | `ground` gas ≤ ~250k? | [!] 353k measured; 110k is ERC-8004 proxy reads. Deferred by user (23 Sep) | Cheaper feedback checks; re-measure |
+| 21 Sep | `ground` gas ≤ ~250k? | [!] 343k measured (`docs/gas.md`); 110k is ERC-8004 proxy reads. Deferred by user (23 Sep) | Cheaper feedback checks; re-measure |
 | 22 Sep | Placeholder submission in; repo public; invite `metropolis@hackathon.monad.xyz` | [ ] Tomorrow | — |
 | 24 Sep | 402 loop working? Also ≥2 teams said "yes, will try it" | [x] loop (fork test) · [ ] teams | Demo uses `pay()` + `rate()` with no paywall |
 | 25 Sep | Envio indexer up? Also pick KIMI vs Qwen (06) | [ ] | Explorer reads `scoreOf` onchain + viem poller into Neon |
