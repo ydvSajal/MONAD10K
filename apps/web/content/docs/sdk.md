@@ -116,8 +116,13 @@ interface Authenticator {
 ```
 
 `SoftwareAuthenticator.random(rpId)` is an in-memory P-256 passkey for scripts and agents with no browser. Pass
-the same `rpId` the contracts were deployed with (`rpId` in `deployments/10143.json`). A browser passkey
-implementation is not built yet.
+the same `rpId` the contracts were deployed with (`rpId` in `deployments/10143.json`).
+
+`BrowserPasskey` is a real WebAuthn passkey in the browser (Touch ID, Windows Hello, a phone, a security key),
+built on `ox`. `BrowserPasskey.create({ rpId, name })` prompts the user; `toJSON()` and `BrowserPasskey.restore()`
+keep the credential id and public key between visits. It requires user verification, folds `s` to the low half
+of the curve (the contract rejects the other half, and hardware authenticators return either), and only works on
+a secure origin whose host matches `rpId`.
 
 ## Errors
 
