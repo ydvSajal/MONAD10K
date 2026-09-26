@@ -32,10 +32,10 @@ chain supports it (`evm_version = "cancun"`).
 
 | Layer | State |
 |---|---|
-| Unit, fuzz, invariant | 65 passing (`forge test`), including an invariant that the score always equals the weighted median of the live ratings and that counters add up, under random pay / rate / dispute / replace / revoke / sweep traffic (256 runs, 8,192 calls; it fails immediately if the replace path is broken) |
+| Unit, fuzz, invariant | 74 passing (`forge test`), every threat mapped to a test or a doc note in `docs/threat-tests.md`, including an invariant that the score always equals the weighted median of the live ratings and that counters add up, under random pay / rate / dispute / replace / revoke / sweep traffic (256 runs, 8,192 calls; it fails immediately if the replace path is broken) |
 | Live fork | 6 passing (`MONAD_FORK_RPC=... forge test -n monad`) |
 | Line coverage, `src/` | `GroundedReputation` 96.7%, `ScoringLib` 92.3%, every other contract 100% |
 | Formatting | `forge fmt --check` in CI |
-| Secrets | gitleaks in CI on every push and PR |
+| Secrets | gitleaks in CI on every push and PR. Full history (`gitleaks git --log-opts="--all"`, 26 Sep): **no leaks**. A scan of the working tree flags one tracked line, `PRIVY_APP_SECRET=` (an empty variable name in an env template in `grounded-docs/06-INTEGRATIONS.md`, ruled a false positive and fingerprinted in `.gitleaksignore`), plus Next.js build caches in the ignored `.next/` folder |
 
 Not audited by a third party. Testnet only.
