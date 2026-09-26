@@ -30,9 +30,6 @@ contracts/broadcast/
 deployments/*.json
 !deployments/README.md
 
-# Envio indexer
-indexer/generated/
-
 # Test / coverage
 coverage/
 lcov.info
@@ -45,7 +42,7 @@ Thumbs.db
 .vscode/
 .idea/
 next-env.d.ts
-*.tsbuildinfo
 census.json
-test-results/
-playwright-report/
+
+# Written by `next dev`
+apps/web/AGENTS.md
