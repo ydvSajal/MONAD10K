@@ -207,7 +207,7 @@ Rule: a third-party piece ships only if Grounded needs it with no prize attached
 - **Mera PRF**: not used. Reviewer auth is a WebAuthn assertion verified onchain.
 - **Alchemy**: RPC fallback only (`RPC_URL_FALLBACK`). No webhooks: the score is computed onchain on read, so there is nothing to recompute offchain.
 - **Envio**: not built. The explorer reads logs directly (`apps/web/lib/events.ts`) and can swap to an indexer later.
-- **KIMI / Qwen**: a provider-agnostic model layer exists (`apps/demo-buyer/src/agent.ts`, three env vars) and is tested with a scripted model. No real model has been run, so none is claimed.
+- **KIMI / Qwen**: a provider-agnostic model layer (`apps/demo-buyer/src/agent.ts`, three env vars). Run once for real (26 Sep, anvil fork) with OpenRouter's free `nvidia/nemotron-3-super-120b-a12b:free`: it bought from the honest seller and refused the sybil one. KIMI and Qwen themselves have not been run, so neither is claimed.
 - **Chainlink CRE**: not built. Anyone can call `sweepRevoked`; the explorer lists ratings waiting for it.
 
 ## Status
