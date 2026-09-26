@@ -222,6 +222,8 @@ Rule: a third-party piece ships only if Grounded needs it with no prize attached
 | Explorer and `GET /api/v1/agents/:id/score` (`apps/web`) | Built; reads live contracts, lists from `getLogs` |
 | Docs (`/docs`) | Written: quickstart, SDK, scoring, contracts, 402, threat model, FAQ |
 | **Testnet deploy**, `deployments/10143.json` | **Not done: waiting on a funded deployer key.** Until then the site says "not deployed yet" |
-| npm publish, hosted demo, Envio indexer, browser passkey playground | Not done. The playground is cut to the roadmap |
+| Playground (`/playground`), `BrowserPasskey`, `/api/drip` faucet | Built; browser E2E passes in real Chrome with a virtual WebAuthn authenticator. **Not tried on a real device** (Touch ID, phone), and no Privy email login: a browser-stored test wallet instead |
+| AI: `@grounded/mcp` (read-only MCP tool), model-driven buyer (`demo-buyer agent`) | Built and tested with a scripted model; **no real model run**, no model claimed |
+| npm publish, hosted demo, Envio indexer | Not done |
 
 Contracts are **unaudited and testnet-only**. Do not put real money behind them.
