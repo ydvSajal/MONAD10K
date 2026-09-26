@@ -331,6 +331,15 @@ export const erc8004ReputationAbi = [
   },
   {
     type: "event",
+    name: "FeedbackRevoked",
+    inputs: [
+      { name: "agentId", type: "uint256", indexed: true },
+      { name: "clientAddress", type: "address", indexed: true },
+      { name: "feedbackIndex", type: "uint64", indexed: true },
+    ],
+  },
+  {
+    type: "event",
     name: "NewFeedback",
     inputs: [
       { name: "agentId", type: "uint256", indexed: true },

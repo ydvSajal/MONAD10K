@@ -71,4 +71,4 @@ registries on testnet.
 **Update 26 Sep:** the SDK, 402 paywall, demo seller/buyer, seed data, explorer, read API and docs are all
 built, and the full demo (a buyer pays an honest agent and refuses a Sybil-inflated one, raw ERC-8004 87 vs
 grounded 20) was run from a clean clone on a fork of Monad testnet. Still true: **nothing is deployed to
-testnet yet**, the SDK is not on npm, and the passkey playground was cut. Say all three.
+testnet yet**, the SDK is not on npm, and the playground has no Privy email login (a browser-stored test wallet and a faucet instead) and has not been tried on a real device. Say all of it.

@@ -140,6 +140,29 @@ NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545 GROUNDED_ADDRESSES=../../deployments/1
 
 Open `http://localhost:3000` for the explorer, or `GET /api/v1/agents/1932/score` for the same score as JSON.
 
+## 8. Rate an agent from the browser
+
+`/playground` walks through the whole loop with a real passkey: create a test wallet, get test funds, create a
+passkey and bind it, pay an agent 0.10 USDC, rate it, and watch its grounded score move.
+
+- The wallet is a throwaway key kept in the browser's storage. Testnet only.
+- **Test funds** come from `/api/drip`, which needs `DRIP_PRIVATE_KEY` (a testnet wallet holding MON and USDC) on
+  the server. Without it the page tells you to fund the address yourself.
+- The passkey is a real WebAuthn credential (Touch ID, Windows Hello, a phone). It only works on the domain the
+  contracts were deployed with: for the local fork that is `localhost`. The page warns if you are elsewhere.
+
+From code, `BrowserPasskey` is the same thing as `SoftwareAuthenticator` for a browser:
+
+```ts
+import { BrowserPasskey } from "@grounded/sdk";
+
+const passkey = await BrowserPasskey.create({ rpId: addresses.rpId, name: "me" }); // prompts the user
+await g.bindPasskey(passkey);
+localStorage.setItem("passkey", JSON.stringify(passkey)); // credential id and public key; the private key stays on the device
+// later:
+const again = BrowserPasskey.restore(JSON.parse(localStorage.getItem("passkey")!));
+```
+
 ## Next
 
 - [SDK reference](/docs/sdk): every method and error
