@@ -199,6 +199,17 @@ Nothing in the protocol has an owner, admin, pauser or upgrade path. Config is `
 
 Off chain we hold exactly one key: a **testnet drip wallet** that hands out MON/USDC to demo users. It has no rights in any contract.
 
+## Integrations: what is used and what is not
+
+Rule: a third-party piece ships only if Grounded needs it with no prize attached. Otherwise it is left out, not stubbed.
+
+- **Privy**: not used. The playground uses a browser test wallet plus a capped faucet.
+- **Mera PRF**: not used. Reviewer auth is a WebAuthn assertion verified onchain.
+- **Alchemy**: RPC fallback only (`RPC_URL_FALLBACK`). No webhooks: the score is computed onchain on read, so there is nothing to recompute offchain.
+- **Envio**: not built. The explorer reads logs directly (`apps/web/lib/events.ts`) and can swap to an indexer later.
+- **KIMI / Qwen**: a provider-agnostic model layer (`apps/demo-buyer/src/agent.ts`, three env vars). Run once for real (26 Sep, anvil fork) with OpenRouter's free `nvidia/nemotron-3-super-120b-a12b:free`: it bought from the honest seller and refused the sybil one. KIMI and Qwen themselves have not been run, so neither is claimed.
+- **Chainlink CRE**: not built. Anyone can call `sweepRevoked`; the explorer lists ratings waiting for it.
+
 ## Status
 
 | Piece | State |
