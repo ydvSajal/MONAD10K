@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAddress, isAddress } from "viem";
 
-import { getActivity } from "../../../lib/events";
-import { getChain } from "../../../lib/grounded";
-import { NotDeployed, Tx, usdc } from "../../ui";
+import { getActivity } from "../../../../lib/events";
+import { getChain } from "../../../../lib/grounded";
+import { NotDeployed, Tx, usdc } from "../../../ui";
 
 export const dynamic = "force-dynamic";
 
