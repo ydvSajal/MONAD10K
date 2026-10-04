@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { BrandMark } from "./BrandMark";
 import "./hero.css";
 
 const VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4";
 
 const LINKS = [
-  ["About", "#how"],
-  ["Features", "#sdk"],
-  ["FAQ", "/docs/faq"],
+  ["How it works", "#how"],
+  ["SDK", "#sdk"],
+  ["Docs", "/docs"],
   ["Contact", "https://github.com/ydvSajal/MONAD10K"],
 ] as const;
 
@@ -53,25 +54,7 @@ export function Hero() {
 
       <div className="hs-bar">
         <Link href="/" className="hs-brand" aria-label="Home">
-          <svg viewBox="0 0 31.5 48.5" aria-hidden="true">
-            <defs>
-              <linearGradient id="hs-bg1" x1="8" y1="0" x2="34.1" y2="28.9" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stopColor="#9e9e9e" />
-                <stop offset=".28" stopColor="#a6a6a6" />
-                <stop offset=".34" stopColor="#a3a3a3" />
-                <stop offset=".4" stopColor="#3a3a3a" />
-                <stop offset=".55" stopColor="#414141" />
-                <stop offset=".6" stopColor="#7a7a7a" />
-                <stop offset=".68" stopColor="#8e8e8e" />
-                <stop offset=".8" stopColor="#a9a9a9" />
-                <stop offset=".95" stopColor="#c4c4c4" />
-                <stop offset="1" stopColor="#cccccc" />
-              </linearGradient>
-            </defs>
-            <path d="M21.5 0 L21.5 19.5 L31.5 19.5 L31.5 29 L10 48.5 L10 28.5 L0.5 28.5 L0.5 18.5 Z" fill="url(#hs-bg1)" />
-            <rect x="0.5" y="18.5" width="9" height="10" fill="#fdfdfd" />
-            <rect x="22" y="19.5" width="9.5" height="9.5" fill="#fdfdfd" />
-          </svg>
+          <BrandMark id="hs-bg1" />
         </Link>
         <nav className="hs-links" aria-label="Primary">
           {LINKS.map(([label, href]) => (
@@ -113,7 +96,7 @@ export function Hero() {
               <span>Get Started</span>
             </Link>
             <Link href="/docs/scoring" className="hs-ghost" onClick={() => setOpen(false)} tabIndex={open ? 0 : -1}>
-              View Architecture
+              How scoring works
             </Link>
           </div>
         </div>
@@ -121,18 +104,18 @@ export function Hero() {
 
       <div className="hs-main">
         <h1 className="hs-headline">
-          <span>The Next Layer</span> <span>of Intelligence</span>
+          <span>A rating counts</span> <span>only if they paid.</span>
         </h1>
         <p className="hs-sub">
-          <span>A unified infrastructure platform to help teams build,</span>{" "}
-          <span>ship, and scale AI systems with confidence.</span>
+          <span>Grounded scores ERC-8004 agents from ratings by reviewers who</span>{" "}
+          <span>paid them onchain. A contract computes it, not a company.</span>
         </p>
         <div className="hs-actions">
           <Link href="/docs/quickstart" className="hs-pill hs-pill-cta">
             <span>Get Started</span>
           </Link>
           <Link href="/docs/scoring" className="hs-ghost">
-            View Architecture
+            How scoring works
           </Link>
         </div>
       </div>
@@ -149,7 +132,7 @@ export function Hero() {
             <rect width="30" height="31" rx="2" mask="url(#hs-m1)" />
             <circle cx="19.5" cy="10.5" r="2.6" />
           </svg>
-          <b>logoipsum</b>
+          <b>Monad</b>
         </span>
         <span className="hs-lg hs-lg2">
           <svg viewBox="0 0 25 30" fill="currentColor">
@@ -158,7 +141,7 @@ export function Hero() {
             <circle cx="15" cy="15" r="3.4" fill="#050505" />
           </svg>
           <b>
-            logoipsum<span className="hs-dot" />
+            ERC-8004
           </b>
         </span>
         <span className="hs-lg hs-lg3">
@@ -167,14 +150,14 @@ export function Hero() {
             <path d="M7.5 15.5c3-5 6.5-5 9 0s5 4.5 5 4.5" />
             <path d="M7 10.5c2.5-2 5-2 7 0" />
           </svg>
-          <b>logoipsum</b>
+          <b>USDC</b>
         </span>
         <span className="hs-lg hs-lg4">
           <svg viewBox="0 0 28 25.5" fill="currentColor">
             <path d="M0 14C6 3 11 3 14 9s8 6 14-3v8c-6 9-11 7-14 2s-8-4-14 2z" />
             <path d="M0 23c4-3 7-3 14 0s10 2 14-1" fill="none" stroke="currentColor" strokeWidth="3.05" />
           </svg>
-          <b>logoipsum</b>
+          <b>WebAuthn</b>
         </span>
       </div>
     </section>

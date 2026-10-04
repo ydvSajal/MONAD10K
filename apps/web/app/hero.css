@@ -7,9 +7,9 @@
   --uw: calc(100vw / 1487);
   --h: clamp(var(--u), calc(var(--u) * 0.65 + var(--uw) * 0.35), calc(var(--u) * 1.16));
   --ink: #fafafa;
-  --muted: #a7a6a6;
-  --nav: #b6b5b5;
-  --strip: #8b8a8a;
+  --muted: #d6d6d6;
+  --nav: #dcdcdc;
+  --strip: #b5b5b5;
   --pill: #ffffff;
   --pill-ink: #050505;
   position: relative;
@@ -90,8 +90,8 @@
   top: calc(51 * var(--u));
   transform: translate(-50%, -50%);
   display: flex;
-  font-size: calc(19 * var(--u));
-  font-weight: 400;
+  font-size: calc(20 * var(--u));
+  font-weight: 500;
   white-space: nowrap;
 }
 .hs-links a {
@@ -168,8 +168,8 @@
   left: calc(75.5 * var(--u));
   top: calc(230.5 * var(--u) + 189 * var(--h));
   margin: 0;
-  font-size: calc(20.7 * var(--h));
-  line-height: calc(23.5 * var(--h));
+  font-size: calc(22 * var(--h));
+  line-height: calc(30 * var(--h));
   font-weight: 400;
   word-spacing: calc(1.8 * var(--h));
   color: var(--muted);
@@ -226,16 +226,16 @@
 }
 .hs-lg1 { left: calc(-0.5 * var(--u)); top: calc(994.7 * var(--u)); }
 .hs-lg1 svg { width: calc(30.5 * var(--u)); height: calc(31 * var(--u)); }
-.hs-lg1 b { left: calc(37 * var(--u)); top: calc(5.6 * var(--u)); font-size: calc(18.1 * var(--u)); }
+.hs-lg1 b { left: calc(37 * var(--u)); top: calc(5.6 * var(--u)); font-size: calc(21 * var(--u)); }
 .hs-lg2 { left: calc(206.5 * var(--u)); top: calc(995.7 * var(--u)); }
 .hs-lg2 svg { width: calc(24.5 * var(--u)); height: calc(30 * var(--u)); }
-.hs-lg2 b { left: calc(31 * var(--u)); top: calc(7.3 * var(--u)); font-size: calc(18.5 * var(--u)); }
+.hs-lg2 b { left: calc(31 * var(--u)); top: calc(7.3 * var(--u)); font-size: calc(21 * var(--u)); }
 .hs-lg3 { left: calc(416.5 * var(--u)); top: calc(996.7 * var(--u)); }
 .hs-lg3 svg { width: calc(28.5 * var(--u)); height: calc(28 * var(--u)); }
-.hs-lg3 b { left: calc(35 * var(--u)); top: calc(7.3 * var(--u)); font-size: calc(16.15 * var(--u)); }
+.hs-lg3 b { left: calc(35 * var(--u)); top: calc(7.3 * var(--u)); font-size: calc(21 * var(--u)); }
 .hs-lg4 { left: calc(620.5 * var(--u)); top: calc(998.7 * var(--u)); }
 .hs-lg4 svg { width: calc(28.5 * var(--u)); height: calc(25.5 * var(--u)); }
-.hs-lg4 b { left: calc(37 * var(--u)); top: calc(8.3 * var(--u)); font-size: calc(15.3 * var(--u)); }
+.hs-lg4 b { left: calc(37 * var(--u)); top: calc(8.3 * var(--u)); font-size: calc(21 * var(--u)); }
 .hs-dot {
   display: inline-block;
   width: 0.09em;
