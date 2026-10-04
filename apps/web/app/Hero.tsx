@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import "./hero.css";
 
@@ -18,6 +18,15 @@ const LINKS = [
 /** Full-screen looping-video hero. Client only for the mobile menu; everything else is static markup. */
 export function Hero() {
   const [open, setOpen] = useState(false);
+  const video = useRef<HTMLVideoElement>(null);
+
+  // React drops the `muted` attribute on hydration, which blocks autoplay; set it on the element and start playback.
+  useEffect(() => {
+    const v = video.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -37,7 +46,7 @@ export function Hero() {
   return (
     <section className={`hs${open ? " is-open" : ""}`}>
       <div className="hs-plate">
-        <video className="hs-video" autoPlay muted loop playsInline preload="auto" aria-hidden="true">
+        <video ref={video} className="hs-video" autoPlay muted loop playsInline preload="auto" aria-hidden="true">
           <source src={VIDEO} type="video/mp4" />
         </video>
       </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { getActivity } from "../lib/events";
 import { getChain } from "../lib/grounded";
@@ -36,7 +37,8 @@ const { pass, reasons, score } = await g.check(1932n, { minScore: 70, minReviewe
 // reasons: ["2 reviewers, policy wants 3", "score 20, policy wants 70"]
 // score.score 20, score.rawScore 87`;
 
-export default async function Landing() {
+/** Reads chain logs, which can take a while on a cold start, so it streams in behind the hero. */
+async function Live() {
   const chain = getChain();
   const activity = chain ? await getActivity(chain) : null;
 
@@ -62,20 +64,8 @@ export default async function Landing() {
   const featured = gap && gap.raw - gap.score >= 20 ? gap : null;
   const shown = featured ?? EXAMPLE;
 
-  const contracts = chain
-    ? ([
-        ["ReceiptRouter", chain.deployment.receiptRouter],
-        ["ReceiptRegistry", chain.deployment.receiptRegistry],
-        ["ReviewerRegistry", chain.deployment.reviewerRegistry],
-        ["GroundedReputation", chain.deployment.groundedReputation],
-      ] as const)
-    : [];
-
   return (
-    <div className="min-h-[100dvh] bg-ink font-sans text-[16px] leading-normal text-paper antialiased">
-      <Motion>
-        <Hero />
-
+    <>
         {/* Hero: the claim on the left, the proof on the right. */}
         <section className="relative overflow-hidden border-t border-line">
           <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-16 md:grid-cols-[1.15fr_1fr] md:px-8 md:pb-28 md:pt-24">
@@ -166,6 +156,31 @@ export default async function Landing() {
             )}
           </div>
         </section>
+
+    </>
+  );
+}
+
+export default function Landing() {
+  const chain = getChain();
+
+  const contracts = chain
+    ? ([
+        ["ReceiptRouter", chain.deployment.receiptRouter],
+        ["ReceiptRegistry", chain.deployment.receiptRegistry],
+        ["ReviewerRegistry", chain.deployment.reviewerRegistry],
+        ["GroundedReputation", chain.deployment.groundedReputation],
+      ] as const)
+    : [];
+
+  return (
+    <div className="min-h-[100dvh] bg-ink font-sans text-[16px] leading-normal text-paper antialiased">
+      <Motion>
+        <Hero />
+
+        <Suspense fallback={<div className="h-[60vh]" aria-hidden />}>
+          <Live />
+        </Suspense>
 
         {/* How it works: sticky claim, steps drawn on scroll. */}
         <section id="how" className="mx-auto grid max-w-6xl gap-12 px-4 py-24 md:grid-cols-[1fr_1.3fr] md:px-8 md:py-32">
