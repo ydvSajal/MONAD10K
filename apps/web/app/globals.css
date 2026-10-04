@@ -3,15 +3,14 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* Landing tokens: dark only, Monad purple as the one accent. */
+/* Landing tokens: dark only, white on black, same as the hero. */
 @theme {
-  --color-ink: #0b0b0f;
-  --color-panel: #131319;
-  --color-line: #25252e;
-  --color-mute: #9191a0;
-  --color-paper: #ececf2;
-  --color-monad: #836ef9;
-  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --color-ink: #050505;
+  --color-panel: #0d0d0d;
+  --color-line: #222222;
+  --color-mute: #a7a6a6;
+  --color-paper: #fafafa;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
