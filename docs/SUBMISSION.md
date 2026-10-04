@@ -56,10 +56,10 @@ unless that changes. Do **not** tick a sponsor whose SDK is not actually carryin
 | What | URL |
 |---|---|
 | Repo | https://github.com/ydvSajal/MONAD10K |
-| Web app + docs | https://monad-10-k.vercel.app (explorer and `/docs`; says "not deployed yet" until the testnet deploy) |
+| Web app + docs | https://monad-10-k.vercel.app (explorer and `/docs`) |
 | Demo video | _Ship week, 7 Oct_ |
 | Pitch video | _Ship week, 8 Oct_ |
-| Contract addresses | _after deploy; will live in `deployments/10143.json`_ |
+| Contract addresses | `deployments/10143.json` (Monad testnet, deployed 4 Oct, block 68082112) |
 
 ## What to say about status, honestly
 
@@ -71,4 +71,4 @@ registries on testnet.
 **Update 26 Sep:** the SDK, 402 paywall, demo seller/buyer, seed data, explorer, read API and docs are all
 built, and the full demo (a buyer pays an honest agent and refuses a Sybil-inflated one, raw ERC-8004 87 vs
 grounded 20) was run from a clean clone on a fork of Monad testnet. Still true: **nothing is deployed to
-testnet yet**, the SDK is not on npm, and the playground has no Privy email login (a browser-stored test wallet and a faucet instead) and has not been tried on a real device. Say all of it.
+testnet yet** (update 4 Oct: now deployed, see Links), the SDK is not on npm, and the playground has no Privy email login (a browser-stored test wallet and a faucet instead) and has not been tried on a real device. Say all of it.
