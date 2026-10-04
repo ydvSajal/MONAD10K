@@ -43,7 +43,23 @@ const events = abi.filter((x) => x.type === "event" && WATCHED.has(x.name));
 /** Public Monad RPCs cap `eth_getLogs` at about 100 blocks per call. */
 const CHUNK = BigInt(process.env.LOG_CHUNK_BLOCKS ?? 100);
 const PARALLEL = 8;
+/** The public Monad RPC rejects more than 25 requests/s ("requests limited to 25/sec"); stay under it. */
+const MAX_RPS = 20;
 const TTL_MS = 15_000;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function getLogs(client: Chain["client"], args: Parameters<Chain["client"]["getLogs"]>[0]) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await client.getLogs(args);
+    } catch (e) {
+      // Another server instance may be scanning too, so the limit can still bite; back off and retry.
+      if (attempt >= 4 || !/limited|rate|429/i.test(String(e))) throw e;
+      await sleep(500 * 2 ** attempt);
+    }
+  }
+}
 
 // The whole scan is one accumulator that only ever moves forward: the first request reads from the
 // deploy block, every later one reads just the blocks since. Monad finalises in one slot, so there is
@@ -54,8 +70,9 @@ let refreshedAt = 0;
 let inflight: Promise<Activity> | undefined;
 
 // ponytail: in-memory per server instance, so a cold start rescans from the deploy block (about 2,000
-// calls per day of chain history at 100 blocks per call, 8 in parallel). Swap this module for Envio
-// GraphQL once the deployment is old enough for that to hurt.
+// calls per day of chain history at 100 blocks per call, paced to 20/s = ~100 s per day of history).
+// Swap this module for Envio GraphQL, or an RPC with a wider getLogs range, before that outgrows the
+// function timeout.
 export function getActivity(chain: Chain): Promise<Activity> {
   if (Date.now() - refreshedAt < TTL_MS) return Promise.resolve(data);
   return (inflight ??= refresh(chain).finally(() => {
@@ -73,9 +90,12 @@ async function refresh({ client, deployment: d }: Chain): Promise<Activity> {
   const address = [d.receiptRegistry, d.groundedReputation, d.reviewerRegistry, d.erc8004Reputation];
   const scanned: Awaited<ReturnType<typeof client.getLogs>>[] = [];
   for (let i = 0; i < ranges.length; i += PARALLEL) {
+    const started = Date.now();
     scanned.push(
-      ...(await Promise.all(ranges.slice(i, i + PARALLEL).map(([fromBlock, toBlock]) => client.getLogs({ address, events: events as never, fromBlock, toBlock })))),
+      ...(await Promise.all(ranges.slice(i, i + PARALLEL).map(([fromBlock, toBlock]) => getLogs(client, { address, events: events as never, fromBlock, toBlock })))),
     );
+    // Pace batches so PARALLEL calls never exceed MAX_RPS.
+    if (i + PARALLEL < ranges.length) await sleep((PARALLEL * 1000) / MAX_RPS - (Date.now() - started));
   }
 
   for (const log of parseEventLogs({ abi, logs: scanned.flat(), strict: false })) fold(log);
