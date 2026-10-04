@@ -61,6 +61,17 @@ body {
 @media (max-width: 720px) { .site-header-inner { gap: 16px; padding: 0 16px; } .site-header nav { gap: 16px; } .site-header .tail { display: none; } }
 
 main { max-width: 1200px; margin: 0 auto; padding: 48px 24px 96px; }
+
+.site-footer { border-top: 1px solid var(--line); background: #070707; }
+.site-footer-inner { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 48px; max-width: 1200px; margin: 0 auto; padding: 56px 24px 40px; }
+.site-footer .brand { display: inline-flex; align-items: center; gap: 12px; }
+.site-footer-about p { margin: 16px 0 0; max-width: 340px; color: var(--muted); font-size: 16px; line-height: 1.6; }
+.site-footer nav { display: flex; flex-direction: column; gap: 12px; }
+.site-footer nav h2 { margin: 0 0 4px; font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8a8a8a; }
+.site-footer nav a { color: var(--muted); text-decoration: none; font-size: 16px; transition: color 0.15s; }
+.site-footer nav a:hover { color: var(--fg); }
+.site-footer-base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; max-width: 1200px; margin: 0 auto; padding: 20px 24px 28px; border-top: 1px solid var(--line); color: #8a8a8a; font-size: 14px; }
+@media (max-width: 720px) { .site-footer-inner { grid-template-columns: 1fr 1fr; gap: 36px 24px; padding: 40px 16px 32px; } .site-footer-about { grid-column: 1 / -1; } .site-footer-base { padding: 20px 16px 28px; } }
 a { color: var(--fg); text-decoration-color: #5a5a5a; text-underline-offset: 3px; }
 a:hover { text-decoration-color: var(--fg); }
 h1 { font-size: 40px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 600; margin: 0 0 8px; }

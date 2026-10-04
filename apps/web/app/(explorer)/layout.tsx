@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { BrandMark } from "../BrandMark";
+import { SiteFooter } from "../SiteFooter";
 
 const NAV = [
   ["Agents", "/agents"],
@@ -38,6 +39,7 @@ export default function ExplorerLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main>{children}</main>
+      <SiteFooter />
     </>
   );
 }

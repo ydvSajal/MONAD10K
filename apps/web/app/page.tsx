@@ -6,6 +6,7 @@ import { getChain } from "../lib/grounded";
 import { CopyCommand } from "./CopyCommand";
 import { Hero } from "./Hero";
 import { Motion } from "./Motion";
+import { SiteFooter } from "./SiteFooter";
 import { explorer, short, usdc } from "./ui";
 
 export const dynamic = "force-dynamic";
@@ -301,17 +302,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <footer className="border-t border-line">
-          <div className="mx-auto flex max-w-7xl flex-wrap gap-6 px-4 py-10 text-base text-mute md:px-8">
-            <span className="mr-auto">Grounded on Monad testnet</span>
-            <Link href="/docs/threat-model" className="text-mute no-underline hover:text-paper">
-              What it does not stop
-            </Link>
-            <Link href="/docs" className="text-mute no-underline hover:text-paper">
-              Docs
-            </Link>
-          </div>
-        </footer>
+        <SiteFooter />
       </Motion>
     </div>
   );
