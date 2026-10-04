@@ -4,8 +4,15 @@ Four contracts plus a helper, Solidity 0.8.28, EVM `cancun`, on Monad Testnet (c
 owner, admin, pauser or upgrade path.** Configuration is `immutable` or `constant`, set once at construction.
 Every state change emits an event. Custom errors only.
 
-> **Not deployed to testnet yet.** Addresses will be published in `deployments/10143.json` and on the
-> explorer. Until then the contracts run on a local fork; see the [Quickstart](/docs/quickstart).
+> **Deployed on Monad Testnet** (4 Oct 2026, block 68082112, rpId `grounded.sajal.sbs`). Addresses are in
+> `deployments/10143.json` and are the SDK's defaults:
+>
+> | Contract | Address |
+> |---|---|
+> | `ReviewerRegistry` | `0xFb38DcB72C222d3943579b4F2c4C91ebcBE4eBa6` |
+> | `ReceiptRegistry` | `0xa89b76Ea9AcEA12A66Fb23d318219b9119362301` |
+> | `ReceiptRouter` | `0xab442c3cbc2997a6218FEA0DD253c3717edfc62e` |
+> | `GroundedReputation` | `0xaDDd1f2F876CD253C57177b675905Bdb0061bF82` |
 
 They sit on top of two contracts we did not write and do not control: the ERC-8004 Identity and Reputation
 registries, and USDC (see [Threat model](/docs/threat-model)).
