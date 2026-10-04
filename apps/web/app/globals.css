@@ -14,6 +14,17 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+/* Ambient section backgrounds: a soft light from above, or a faint dot grid fading out at the edges. */
+.bg-glow { background: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(255, 255, 255, 0.07), transparent 70%), #050505; }
+.bg-dots { position: relative; isolation: isolate; }
+.bg-dots::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.11) 1px, transparent 1.2px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 40%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 40%, #000 30%, transparent 80%);
+}
+
 /* Explorer and docs styles, layered so landing utilities win over these element rules. */
 @layer base {
 :root {
@@ -27,7 +38,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 body {
   margin: 0;
   background: var(--bg);
@@ -70,15 +81,31 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 24px; }
 .facts span { overflow-wrap: anywhere; }
 
-/* Docs */
-.docs { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 64px; }
-.docs nav { display: flex; flex-direction: column; gap: 2px; align-self: start; position: sticky; top: 104px; border-left: 1px solid var(--line); }
-.docs nav a { padding: 8px 18px; margin-left: -1px; border-left: 2px solid transparent; color: var(--muted); text-decoration: none; font-size: 16px; font-weight: 500; }
-.docs nav a:hover { color: var(--fg); }
-.docs nav a[aria-current="page"] { color: var(--fg); border-left-color: #fff; font-weight: 600; }
-@media (max-width: 800px) { .docs { grid-template-columns: 1fr; gap: 24px; } .docs nav { flex-direction: row; flex-wrap: wrap; position: static; border-left: 0; gap: 6px; } .docs nav a { border: 1px solid var(--line); border-radius: 999px; margin: 0; padding: 6px 14px; } .docs nav a[aria-current="page"] { background: #fff; color: #050505; border-color: #fff; } }
-.prose { min-width: 0; max-width: 760px; font-size: 18px; line-height: 1.75; color: #e4e4e4; }
-.prose h1 { font-size: 44px; margin: 0 0 20px; color: #fff; }
+/* Docs: grouped sidebar, section eyebrow, soft light from the top of the page. */
+.docs { position: relative; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 72px; }
+.docs::before { content: ""; position: absolute; z-index: -1; left: 50%; top: -48px; width: 100vw; height: 560px; transform: translateX(-50%); pointer-events: none; background: radial-gradient(ellipse 55% 75% at 30% 0%, rgba(255, 255, 255, 0.075), transparent 70%), radial-gradient(ellipse 40% 60% at 85% 0%, rgba(160, 170, 190, 0.06), transparent 70%); }
+.docs nav { display: flex; flex-direction: column; gap: 28px; align-self: start; position: sticky; top: 112px; padding-right: 24px; border-right: 1px solid var(--line); }
+.docs-group { display: flex; flex-direction: column; gap: 2px; }
+.docs-group-title { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--fg); letter-spacing: 0.01em; }
+.docs nav a { padding: 7px 0 7px 16px; border-left: 1px solid var(--line); color: var(--muted); text-decoration: none; font-size: 16px; font-weight: 500; transition: color 0.15s, border-color 0.15s; }
+.docs nav a:hover { color: var(--fg); border-left-color: #777; }
+.docs nav a[aria-current="page"] { color: var(--fg); border-left: 2px solid #fff; padding-left: 15px; font-weight: 600; }
+.docs-body { min-width: 0; max-width: 800px; }
+.docs-eyebrow { margin: 0 0 10px; font-size: 15px; font-weight: 600; color: var(--muted); }
+.docs-pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 72px; padding-top: 32px; border-top: 1px solid var(--line); }
+.docs-pager a { display: flex; flex-direction: column; gap: 4px; min-width: 220px; padding: 18px 22px; border: 1px solid var(--line); border-radius: 14px; text-decoration: none; font-size: 19px; font-weight: 600; transition: border-color 0.15s, background 0.15s; }
+.docs-pager a:hover { border-color: #777; background: #0e0e0e; }
+.docs-pager a span { font-size: 14px; font-weight: 500; color: var(--muted); }
+.docs-pager .next { margin-left: auto; text-align: right; }
+@media (max-width: 860px) {
+  .docs { grid-template-columns: 1fr; gap: 32px; }
+  .docs nav { position: static; flex-direction: row; flex-wrap: wrap; gap: 20px; padding: 0 0 24px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .docs-group { flex: 1 1 160px; }
+  .docs-pager a { min-width: 0; flex: 1; }
+}
+.prose { min-width: 0; max-width: 800px; font-size: 18px; line-height: 1.75; color: #e4e4e4; }
+.prose h1 { font-size: 48px; margin: 0 0 24px; color: #fff; }
+.prose h1 + p { font-size: 20px; color: #d6d6d6; }
 .prose h2 { font-size: 28px; margin: 56px 0 14px; padding-top: 32px; border-top: 1px solid var(--line); color: #fff; }
 .prose h3 { font-size: 21px; margin: 32px 0 8px; color: #fff; }
 .prose p, .prose li { margin: 0 0 16px; }

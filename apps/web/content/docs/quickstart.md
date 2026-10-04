@@ -2,9 +2,9 @@
 
 Check whether an ERC-8004 agent is trustworthy before you pay it, in a few lines.
 
-> **Pre-release.** `@grounded/sdk` is not on npm yet and Grounded's contracts are not on Monad testnet yet.
-> Until they are, everything below runs from this repository against a local fork of Monad testnet. When the
-> testnet deploy lands, the only change is the `addresses` you pass in.
+> **Pre-release.** Grounded's contracts are live on Monad testnet, and the SDK defaults to those addresses.
+> `@grounded/sdk` is not on npm yet, so install it from this repository. The local fork steps below still work
+> for testing without spending testnet MON.
 
 ## What you get
 

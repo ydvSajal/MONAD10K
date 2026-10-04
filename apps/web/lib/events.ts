@@ -54,8 +54,8 @@ async function getLogs(client: Chain["client"], args: Parameters<Chain["client"]
     try {
       return await client.getLogs(args);
     } catch (e) {
-      // Another server instance may be scanning too, so the limit can still bite; back off and retry.
-      if (attempt >= 4 || !/limited|rate|429/i.test(String(e))) throw e;
+      // Rate limits (another instance scanning) and timeouts (the public RPC stalls) are transient: back off and retry.
+      if (attempt >= 4 || !/limited|rate|429|timed? ?out|took too long/i.test(String(e))) throw e;
       await sleep(500 * 2 ** attempt);
     }
   }
@@ -88,17 +88,17 @@ async function refresh({ client, deployment: d }: Chain): Promise<Activity> {
   for (let from = start; from <= head; from += CHUNK) ranges.push([from, from + CHUNK - 1n < head ? from + CHUNK - 1n : head]);
 
   const address = [d.receiptRegistry, d.groundedReputation, d.reviewerRegistry, d.erc8004Reputation];
-  const scanned: Awaited<ReturnType<typeof client.getLogs>>[] = [];
   for (let i = 0; i < ranges.length; i += PARALLEL) {
     const started = Date.now();
-    scanned.push(
-      ...(await Promise.all(ranges.slice(i, i + PARALLEL).map(([fromBlock, toBlock]) => getLogs(client, { address, events: events as never, fromBlock, toBlock })))),
-    );
+    const batch = ranges.slice(i, i + PARALLEL);
+    const logs = await Promise.all(batch.map(([fromBlock, toBlock]) => getLogs(client, { address, events: events as never, fromBlock, toBlock })));
+    // Fold and advance per batch, so a failure mid-scan keeps the progress and the next request resumes from here.
+    for (const log of parseEventLogs({ abi, logs: logs.flat(), strict: false })) fold(log);
+    data.toBlock = batch[batch.length - 1]![1];
     // Pace batches so PARALLEL calls never exceed MAX_RPS.
-    if (i + PARALLEL < ranges.length) await sleep((PARALLEL * 1000) / MAX_RPS - (Date.now() - started));
+    if (i + PARALLEL < ranges.length) await sleep(Math.max(0, (PARALLEL * 1000) / MAX_RPS - (Date.now() - started)));
   }
 
-  for (const log of parseEventLogs({ abi, logs: scanned.flat(), strict: false })) fold(log);
   data.toBlock = head;
   refreshedAt = Date.now();
   return data;

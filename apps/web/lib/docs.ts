@@ -5,14 +5,14 @@ import { marked } from "marked";
 
 /** The only pages that exist. A slug outside this list never reaches the filesystem. */
 export const DOCS = [
-  { slug: "quickstart", title: "Quickstart" },
-  { slug: "sdk", title: "SDK reference" },
-  { slug: "scoring", title: "Scoring spec" },
-  { slug: "contracts", title: "Contracts" },
-  { slug: "402-scheme", title: "402 scheme" },
-  { slug: "ai-agents", title: "AI agents" },
-  { slug: "threat-model", title: "Threat model" },
-  { slug: "faq", title: "FAQ" },
+  { slug: "quickstart", title: "Quickstart", group: "Introduction" },
+  { slug: "faq", title: "FAQ", group: "Introduction" },
+  { slug: "scoring", title: "Scoring spec", group: "Core concepts" },
+  { slug: "contracts", title: "Contracts", group: "Core concepts" },
+  { slug: "threat-model", title: "Threat model", group: "Core concepts" },
+  { slug: "sdk", title: "SDK reference", group: "Integrate" },
+  { slug: "402-scheme", title: "402 scheme", group: "Integrate" },
+  { slug: "ai-agents", title: "AI agents", group: "Integrate" },
 ] as const;
 
 export function renderDoc(slug: string): string | null {
