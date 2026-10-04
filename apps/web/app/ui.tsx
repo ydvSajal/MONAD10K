@@ -2,7 +2,7 @@ import { monadTestnet, type ScoreResult } from "@grounded/sdk";
 import Link from "next/link";
 import { formatUnits, type Hex } from "viem";
 
-const explorer = monadTestnet.blockExplorers.default.url;
+export const explorer = monadTestnet.blockExplorers.default.url;
 
 export const short = (s: string) => `${s.slice(0, 6)}…${s.slice(-4)}`;
 export const usdc = (units: bigint) => formatUnits(units, 6);

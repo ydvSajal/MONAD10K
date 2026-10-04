@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPublicClient, createWalletClient, erc20Abi, formatEther, formatUnits, http, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
-import type { Deployment } from "../../lib/grounded";
+import type { Deployment } from "../../../lib/grounded";
 
 const KEY = "grounded.playground.key";
 const PASSKEY = "grounded.playground.passkey";

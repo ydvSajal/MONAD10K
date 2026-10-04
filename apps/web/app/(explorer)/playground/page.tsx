@@ -1,6 +1,6 @@
-import { getActivity } from "../../lib/events";
-import { getChain } from "../../lib/grounded";
-import { NotDeployed } from "../ui";
+import { getActivity } from "../../../lib/events";
+import { getChain } from "../../../lib/grounded";
+import { NotDeployed } from "../../ui";
 import { Playground } from "./Playground";
 
 export const dynamic = "force-dynamic";

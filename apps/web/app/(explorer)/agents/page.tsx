@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { getActivity } from "../../lib/events";
-import { getChain } from "../../lib/grounded";
-import { Grounded, NotDeployed } from "../ui";
+import { getActivity } from "../../../lib/events";
+import { getChain } from "../../../lib/grounded";
+import { Grounded, NotDeployed } from "../../ui";
 
 export const dynamic = "force-dynamic";
 

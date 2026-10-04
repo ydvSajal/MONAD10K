@@ -1,3 +1,22 @@
+@layer theme, base, utilities;
+/* ponytail: no Tailwind preflight, it would reset the explorer and docs styles below. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Landing tokens: dark only, Monad purple as the one accent. */
+@theme {
+  --color-ink: #0b0b0f;
+  --color-panel: #131319;
+  --color-line: #25252e;
+  --color-mute: #9191a0;
+  --color-paper: #ececf2;
+  --color-monad: #836ef9;
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Explorer and docs styles, layered so landing utilities win over these element rules. */
+@layer base {
 :root {
   --bg: #fbfbf9;
   --fg: #1b1b1a;
@@ -58,3 +77,4 @@ button { font: inherit; padding: 6px 14px; border: 1px solid var(--line); border
 button:hover:not(:disabled) { border-color: var(--accent); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 input { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); max-width: 100%; }
+}

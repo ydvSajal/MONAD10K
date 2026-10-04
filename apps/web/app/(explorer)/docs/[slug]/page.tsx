@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { DOCS, renderDoc } from "../../../lib/docs";
+import { DOCS, renderDoc } from "../../../../lib/docs";
 
 export const dynamicParams = false;
 

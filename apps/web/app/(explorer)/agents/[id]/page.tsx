@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 
-import { getActivity } from "../../../lib/events";
-import { getChain } from "../../../lib/grounded";
-import { Grounded, NotDeployed, Reviewer, Tx, usdc } from "../../ui";
+import { getActivity } from "../../../../lib/events";
+import { getChain } from "../../../../lib/grounded";
+import { Grounded, NotDeployed, Reviewer, Tx, usdc } from "../../../ui";
 
 export const dynamic = "force-dynamic";
 

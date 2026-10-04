@@ -1,29 +1,21 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
 import "./globals.css";
 
+const sans = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+
 export const metadata: Metadata = {
-  title: "Grounded Explorer",
+  title: "Grounded",
   description: "ERC-8004 agent reputation that counts only ratings backed by an onchain payment.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <header>
-          <Link href="/" className="brand">
-            Grounded
-          </Link>
-          <span className="muted">payment-grounded reputation for ERC-8004 agents · Monad testnet</span>
-          <Link href="/agents">Agents</Link>
-          <Link href="/playground">Playground</Link>
-          <Link href="/docs">Docs</Link>
-        </header>
-        <main>{children}</main>
-      </body>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }
