@@ -28,7 +28,8 @@ async function loadAddresses() {
 
 describe("Grounded (no network)", () => {
   it("throws a useful error when the contract address is unknown", async () => {
-    const g = new Grounded({ chain: "monad-testnet" });
+    // Simulate a chain without our deploy; exactOptionalPropertyTypes rejects `undefined`, hence the cast.
+    const g = new Grounded({ chain: "monad-testnet", addresses: { groundedReputation: undefined } as never });
     await expect(g.score(1n)).rejects.toBeInstanceOf(NotDeployedError);
     await expect(g.score(1n)).rejects.toThrow(/not deployed yet/);
   });
