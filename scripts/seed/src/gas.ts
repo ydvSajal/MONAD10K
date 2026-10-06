@@ -21,7 +21,7 @@ import {
   type Hex,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { Grounded, SoftwareAuthenticator, monadTestnet } from "@grounded/sdk";
+import { Grounded, SoftwareAuthenticator, monadTestnet } from "@sajalydv/grounded-sdk";
 
 const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL ?? "http://127.0.0.1:8545";
 const addresses = JSON.parse(readFileSync(process.env.GROUNDED_ADDRESSES ?? "../../deployments/10143.json", "utf8"));

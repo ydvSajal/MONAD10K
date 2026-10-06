@@ -34,7 +34,7 @@ flowchart TB
   GH["GitHub repo"] -->|push main| VW["Vercel: grounded-web<br/>(prod domain = rpId)"]
   GH -->|push main| VS["Vercel: grounded-seller"]
   GH -->|push main| ENV["Envio Cloud indexer"]
-  GH -->|tag v*| NPM["npm @grounded/sdk"]
+  GH -->|tag v*| NPM["npm @sajalydv/grounded-sdk"]
   VW --> MON
   VW --> ENV
   VW --> PR["Privy"]
@@ -128,9 +128,9 @@ forge script script/Deploy.s.sol \
 # writes deployments/10143.json; commit it
 
 # 2. SDK
-pnpm --filter @grounded/sdk generate   # wagmi cli -> abi/
-pnpm --filter @grounded/sdk build && pnpm --filter @grounded/sdk test
-pnpm --filter @grounded/sdk publish --access public --tag beta
+pnpm --filter @sajalydv/grounded-sdk generate   # wagmi cli -> abi/
+pnpm --filter @sajalydv/grounded-sdk build && pnpm --filter @sajalydv/grounded-sdk test
+pnpm --filter @sajalydv/grounded-sdk publish --access public --tag beta
 
 # 3. Indexer
 cd indexer && pnpm envio codegen && git push   # Envio Cloud deploys from repo

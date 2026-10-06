@@ -25,7 +25,7 @@ import {
   type Hex,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { Grounded, SoftwareAuthenticator, erc8004ReputationAbi, monadTestnet } from "@grounded/sdk";
+import { Grounded, SoftwareAuthenticator, erc8004ReputationAbi, monadTestnet } from "@sajalydv/grounded-sdk";
 
 const env = process.env;
 const rpcUrl = env.NEXT_PUBLIC_RPC_URL ?? "http://127.0.0.1:8545";

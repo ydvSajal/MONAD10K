@@ -3,7 +3,7 @@ import { parseArgs } from "node:util";
 
 import { createWalletClient, http, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { Grounded, GroundedError, UntrustedAgentError, monadTestnet } from "@grounded/sdk";
+import { Grounded, GroundedError, UntrustedAgentError, monadTestnet } from "@sajalydv/grounded-sdk";
 
 const { values: args } = parseArgs({
   options: {

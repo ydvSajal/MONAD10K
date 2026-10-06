@@ -29,13 +29,13 @@ Legend: `[x]` done · `[ ]` open · `[~]` partly done · `[-]` cut on purpose
 | GroundedReputation | `0xaDDd1f2F876CD253C57177b675905Bdb0061bF82` |
 
 ### SDK and apps
-- [x] `@grounded/sdk` read path: `score`, `check`, `assertTrusted`, `payoutWallet`, `rawScore`; live testnet addresses are the defaults
+- [x] `@sajalydv/grounded-sdk` read path: `score`, `check`, `assertTrusted`, `payoutWallet`, `rawScore`; live testnet addresses are the defaults
 - [x] SDK write path: `pay`, `bindPasskey`, `rate`, `groundFeedback`, `SoftwareAuthenticator`, `BrowserPasskey`
-- [x] 402 flow: `withTrust(fetch)` + `@grounded/sdk/server` `groundedPaywall` + memory and Postgres `ReceiptStore`
+- [x] 402 flow: `withTrust(fetch)` + `@sajalydv/grounded-sdk/server` `groundedPaywall` + memory and Postgres `ReceiptStore`
 - [x] `apps/demo-seller` (Hono) and `apps/demo-buyer` (CLI + model-driven `agent` mode)
 - [x] `scripts/seed` (fork) + `census` of the live ERC-8004 registry
 - [x] `apps/web`: explorer, agent/reviewer pages, `GET /api/v1/agents/:id/score`, playground, docs at `/docs`
-- [x] `@grounded/mcp` read-only MCP server (`grounded_score`, `grounded_check`)
+- [x] `@sajalydv/grounded-mcp` read-only MCP server (`grounded_score`, `grounded_check`)
 - [x] One real model run (26 Sep, OpenRouter free model, fork): bought from the honest agent, refused the sybil one
 - [x] CI: forge test + fmt, typecheck/test/build, gitleaks; secrets audit 4 Oct: full history clean
 
@@ -44,7 +44,7 @@ Legend: `[x]` done · `[ ]` open · `[~]` partly done · `[-]` cut on purpose
 ### Needs the owner (cannot be done from code)
 - [ ] **DNS:** `A grounded 76.76.21.21` at the `sajal.sbs` registrar. Passkeys only work on `grounded.sajal.sbs`
 - [ ] **Repo public**, or shared with `metropolis@hackathon.monad.xyz`
-- [ ] **`npm publish`** `@grounded/sdk` (needs `npm login`; scope ownership unchecked)
+- [ ] **`npm publish`** `@sajalydv/grounded-sdk` (needs `npm login`; scope ownership unchecked)
 - [ ] **Outreach:** at least one external integrator live by 5 Oct (`docs/OUTREACH.md` has the target list)
 - [ ] Real-device passkey test (Touch ID / phone) on the production domain
 - [ ] Demo video (≤3 min) and pitch video (≤2 min), 6–8 Oct

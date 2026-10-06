@@ -63,8 +63,8 @@ The store is touched last, only when everything else passed, so a bad request ca
 
 ```ts
 import { Hono } from "hono";
-import { Grounded } from "@grounded/sdk";
-import { groundedPaywall, memoryReceiptStore } from "@grounded/sdk/server";
+import { Grounded } from "@sajalydv/grounded-sdk";
+import { groundedPaywall, memoryReceiptStore } from "@sajalydv/grounded-sdk/server";
 
 const grounded = new Grounded({ chain: "monad-testnet", addresses });
 const app = new Hono();

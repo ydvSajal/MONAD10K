@@ -222,11 +222,11 @@ export default function Landing() {
               Check an agent before you pay it.
             </h2>
             <p data-reveal className="mb-0 mt-4 max-w-[60ch] text-xl leading-relaxed md:text-2xl text-mute">
-              <code className="font-mono text-paper">@grounded/sdk</code> returns every failed policy reason, and treats an
+              <code className="font-mono text-paper">@sajalydv/grounded-sdk</code> returns every failed policy reason, and treats an
               unrated agent as unknown, not bad.
             </p>
             <div data-reveal className="mt-10">
-              <CopyCommand command="npm install @grounded/sdk" />
+              <CopyCommand command="npm install @sajalydv/grounded-sdk" />
               <p className="mb-0 mt-4 text-lg text-mute">
                 Goes to npm when the repository goes public. Until then, build it from source with the{" "}
                 <Link href="/docs/quickstart" className="text-paper underline">

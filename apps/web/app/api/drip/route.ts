@@ -1,4 +1,4 @@
-import { monadTestnet } from "@grounded/sdk";
+import { monadTestnet } from "@sajalydv/grounded-sdk";
 import { createPublicClient, createWalletClient, erc20Abi, http, isAddress, parseEther, parseUnits, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 

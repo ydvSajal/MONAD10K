@@ -38,7 +38,7 @@ flowchart TB
     end
 
     subgraph Offchain["Off chain — all of this is deletable"]
-        SDK["@grounded/sdk"]
+        SDK["@sajalydv/grounded-sdk"]
         PAYWALL["402 paywall middleware"]
         WEB["Explorer · playground · docs"]
         IDX["Envio indexer"]
@@ -126,10 +126,10 @@ Honest limits:
 | `contracts/src/` | `ReceiptRegistry`, `ReceiptRouter`, `ReviewerRegistry`, `GroundedReputation`, `lib/ScoringLib`, `lib/GroundedWebAuthn`, `adapters/Erc8004Adapter` |
 | `contracts/test/` | `unit/`, `fork/` (live testnet, opt-in), `invariant/` |
 | `contracts/abi/erc8004/` | ABIs of the deployed ERC-8004 registries, selector-verified against testnet bytecode |
-| `packages/sdk/` | `@grounded/sdk`: score/check, pay/rate, `withTrust`, and `groundedPaywall` (`/server`) |
+| `packages/sdk/` | `@sajalydv/grounded-sdk`: score/check, pay/rate, `withTrust`, and `groundedPaywall` (`/server`) |
 | `apps/demo-seller/` | Hono agent service charging per request through the 402 paywall |
 | `apps/demo-buyer/` | Script agent that pays a 402 seller only if its agent passes a trust policy; `agent` mode lets a language model choose among sellers inside limits it cannot change |
-| `packages/mcp/` | `@grounded/mcp`: read-only MCP server (`grounded_score`, `grounded_check`) so any AI agent can ask before it pays |
+| `packages/mcp/` | `@sajalydv/grounded-mcp`: read-only MCP server (`grounded_score`, `grounded_check`) so any AI agent can ask before it pays |
 | `grounded-docs/` | PRD, TRD, system architecture, timeline, deployment, integrations |
 | `docs/BUILDLOG.md`, `docs/TASKS.md` | Daily log, and what is left |
 
@@ -156,7 +156,7 @@ cd contracts && RP_ID=localhost forge script script/Deploy.s.sol --rpc-url http:
   --private-key <anvil key 0> --broadcast --skip-simulation     # writes deployments/10143.json
 
 # 2. backend: demo seller, paid as agent 1 (has a payout wallet)
-pnpm --filter @grounded/sdk build
+pnpm --filter @sajalydv/grounded-sdk build
 SELLER_AGENT_ID=1 NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545 pnpm --filter @grounded/demo-seller start   # :8787
 
 # 3. buyer: pays only if agent 1 passes the policy (default: score >= 70 from >= 1 reviewer)
@@ -216,14 +216,14 @@ Rule: a third-party piece ships only if Grounded needs it with no prize attached
 |---|---|
 | Contracts: receipts, router, reviewer passkeys, scoring, `sweepRevoked`, `GroundedGate` | Built, tested (64 unit/fuzz/invariant + 6 live-fork), slither clean of real findings |
 | `Deploy.s.sol` | Built, rehearsed on an anvil fork of 10143 |
-| `@grounded/sdk` and `@grounded/sdk/server` (402 paywall) | Built, 38 tests incl. fork tests against the live ERC-8004 registries and USDC |
+| `@sajalydv/grounded-sdk` and `@sajalydv/grounded-sdk/server` (402 paywall) | Built, 38 tests incl. fork tests against the live ERC-8004 registries and USDC |
 | `apps/demo-seller`, `apps/demo-buyer` | Built; a buyer pays an honest agent and refuses a Sybil-inflated one, verified from a clean clone |
 | `scripts/seed`, `scripts/seed census` | Built: seed demo data on a fork; read-only census of the live registry |
 | Explorer and `GET /api/v1/agents/:id/score` (`apps/web`) | Built; reads live contracts, lists from `getLogs` |
 | Docs (`/docs`) | Written: quickstart, SDK, scoring, contracts, 402, threat model, FAQ |
 | **Testnet deploy**, `deployments/10143.json` | **Deployed 4 Oct** (block 68082112, rpId `grounded.sajal.sbs`); wiring verified on chain; the SDK uses these addresses by default |
 | Playground (`/playground`), `BrowserPasskey`, `/api/drip` faucet | Built; browser E2E passes in real Chrome with a virtual WebAuthn authenticator. **Not tried on a real device** (Touch ID, phone), and no Privy email login: a browser-stored test wallet instead |
-| AI: `@grounded/mcp` (read-only MCP tool), model-driven buyer (`demo-buyer agent`) | Built; tested with a scripted model and run once with a real model (OpenRouter free tier, on a fork); KIMI/Qwen not run, not claimed |
+| AI: `@sajalydv/grounded-mcp` (read-only MCP tool), model-driven buyer (`demo-buyer agent`) | Built; tested with a scripted model and run once with a real model (OpenRouter free tier, on a fork); KIMI/Qwen not run, not claimed |
 | npm publish, testnet seed data, Envio indexer | Not done |
 
 Contracts are **unaudited and testnet-only**. Do not put real money behind them.

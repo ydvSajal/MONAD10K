@@ -1,4 +1,4 @@
-import { erc8004ReputationAbi, groundedReputationAbi, receiptRegistryAbi, reviewerRegistryAbi } from "@grounded/sdk";
+import { erc8004ReputationAbi, groundedReputationAbi, receiptRegistryAbi, reviewerRegistryAbi } from "@sajalydv/grounded-sdk";
 import { parseEventLogs, type Address, type Hex } from "viem";
 
 import type { Chain } from "./grounded";

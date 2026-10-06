@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { Grounded } from "@grounded/sdk";
+import { Grounded } from "@sajalydv/grounded-sdk";
 
 import { createServer } from "./server.js";
 

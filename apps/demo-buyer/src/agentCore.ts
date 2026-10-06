@@ -1,5 +1,5 @@
-import type { Grounded, PaymentRequired, TrustPolicy } from "@grounded/sdk";
-import { GroundedError, UntrustedAgentError } from "@grounded/sdk";
+import type { Grounded, PaymentRequired, TrustPolicy } from "@sajalydv/grounded-sdk";
+import { GroundedError, UntrustedAgentError } from "@sajalydv/grounded-sdk";
 import { generateText, stepCountIs, tool, type LanguageModel } from "ai";
 import { formatUnits } from "viem";
 import { z } from "zod";

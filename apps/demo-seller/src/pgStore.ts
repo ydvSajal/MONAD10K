@@ -1,5 +1,5 @@
 import pg from "pg";
-import type { ReceiptStore } from "@grounded/sdk/server";
+import type { ReceiptStore } from "@sajalydv/grounded-sdk/server";
 
 /**
  * Used receipts in Postgres, so a restart or a second instance cannot let a receipt buy twice.

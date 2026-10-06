@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { Grounded, monadTestnet } from "@grounded/sdk";
+import { Grounded, monadTestnet } from "@sajalydv/grounded-sdk";
 import { MockLanguageModelV3 } from "ai/test";
 import { createPublicClient, createWalletClient, erc20Abi, http, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";

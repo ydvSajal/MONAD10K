@@ -53,7 +53,7 @@ Assign one owner each. If solo, work top-to-bottom: A is the critical path, D is
 ### Day 6 · Tue 22 Sep — SDK read path + placeholder submission
 - D: **Submit placeholder entry** (name, one-liner, repo link). Make repo public; invite `metropolis@hackathon.monad.xyz`.
 - B: `packages/sdk`: wagmi-cli generated ABIs, addresses, `score()`, `check()`, raw score via ERC-8004 `getSummary`.
-- **Done when:** `pnpm --filter @grounded/sdk test` reads a live score from testnet.
+- **Done when:** `pnpm --filter @sajalydv/grounded-sdk test` reads a live score from testnet.
 
 ### Day 7 · Wed 23 Sep — SDK write path
 - B: `bindPasskey()`, `pay()`, `rate()` (giveFeedback → ground back-to-back, measured gas limits), software authenticator for headless agents, typed errors.

@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { Grounded } from "@grounded/sdk";
-import { groundedPaywall, memoryReceiptStore } from "@grounded/sdk/server";
+import { Grounded } from "@sajalydv/grounded-sdk";
+import { groundedPaywall, memoryReceiptStore } from "@sajalydv/grounded-sdk/server";
 
 import { postgresReceiptStore } from "./pgStore.js";
 

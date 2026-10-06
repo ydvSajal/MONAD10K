@@ -3,7 +3,7 @@
 Two ways to put Grounded in front of an AI agent. Both are built and tested against the real contracts on a
 fork. Neither has been run with a real language model yet (see the end).
 
-## The MCP tool: `@grounded/mcp`
+## The MCP tool: `@sajalydv/grounded-mcp`
 
 An [MCP](https://modelcontextprotocol.io) server that lets any MCP client (Claude Desktop, Claude Code,
 Cursor, your own agent) ask whether an ERC-8004 agent's reputation is payment-grounded.
@@ -20,7 +20,7 @@ Run it (from the repository; not on npm yet):
 
 ```bash
 GROUNDED_ADDRESSES=deployments/10143.json NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545 \
-  pnpm --filter @grounded/mcp start
+  pnpm --filter @sajalydv/grounded-mcp start
 ```
 
 A client configuration looks like this (adjust the paths):

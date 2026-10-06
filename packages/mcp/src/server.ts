@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { Grounded } from "@grounded/sdk";
+import type { Grounded } from "@sajalydv/grounded-sdk";
 import { z } from "zod";
 
 /** All the server needs from the SDK: two reads. It has no wallet, so it cannot send a transaction. */

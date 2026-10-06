@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-import { Grounded, type Addresses } from "@grounded/sdk";
+import { Grounded, type Addresses } from "@sajalydv/grounded-sdk";
 import type { PublicClient } from "viem";
 
 export type Deployment = Addresses & { deployedAtBlock: number; rpId: string };
