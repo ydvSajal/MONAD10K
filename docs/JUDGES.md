@@ -22,6 +22,8 @@ if the reviewer paid the agent onchain, through `ReceiptRouter`, and signed with
 | ReceiptRouter | [`0xab442c3cbc2997a6218FEA0DD253c3717edfc62e`](https://testnet.monadscan.com/address/0xab442c3cbc2997a6218FEA0DD253c3717edfc62e) |
 | GroundedReputation | [`0xaDDd1f2F876CD253C57177b675905Bdb0061bF82`](https://testnet.monadscan.com/address/0xaDDd1f2F876CD253C57177b675905Bdb0061bF82) |
 
+All four sources are verified on monadscan.
+
 ERC-8004 registries used (not ours): Identity `0x8004A818BFB912233c491871b3d84c89A494BD9e`, Reputation
 `0x8004B663056A597Dffe9eCcC1965A193B7388713`. No contract has an owner, admin, pauser or upgrade proxy.
 
