@@ -192,7 +192,7 @@ grounded/
 │  ├─ script/{Deploy,DeployErc8004,Seed}.s.sol
 │  └─ foundry.toml
 ├─ packages/
-│  └─ sdk/                        # @grounded/sdk
+│  └─ sdk/                        # @sajalydv/grounded-sdk
 │     └─ src/{client,score,check,pay,rate,fetch,gas,errors,addresses}.ts
 │        src/passkey/{browser,software}.ts
 │        src/server/paywall.ts

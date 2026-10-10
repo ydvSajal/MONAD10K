@@ -166,7 +166,7 @@ Confidence (computed in SDK, not stored): `none` (0 reviewers), `low` (< 5), `ok
 
 Tests: fuzz `median` against a reference that expands weights into a sorted array; property: adding a rating then replacing it with the same values leaves state identical.
 
-## 5. SDK (`packages/sdk`, npm `@grounded/sdk` — check scope availability day 6; fallback `@<org>/grounded`)
+## 5. SDK (`packages/sdk`, npm `@sajalydv/grounded-sdk` — check scope availability day 6; fallback `@<org>/grounded`)
 
 ```ts
 type ChainName = "monad-testnet";
@@ -198,7 +198,7 @@ interface CheckResult { pass: boolean; reasons: string[]; score: ScoreResult }
 
 type Authenticator = BrowserPasskey | SoftwareAuthenticator;
 
-// server entry: @grounded/sdk/server
+// server entry: @sajalydv/grounded-sdk/server
 function groundedPaywall(opts: { agentId: bigint; price: string; token?: Address; store: ReceiptStore }): MiddlewareHandler;
 interface ReceiptStore { markUsed(receiptId: bigint): Promise<boolean> } // false if already used
 ```

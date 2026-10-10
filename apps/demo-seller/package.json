@@ -11,7 +11,7 @@
     "check": "tsx src/pgStore.check.ts"
   },
   "dependencies": {
-    "@grounded/sdk": "workspace:*",
+    "@sajalydv/grounded-sdk": "workspace:*",
     "@hono/node-server": "^2.1.1",
     "hono": "^4.13.9",
     "pg": "^8.16.0"

@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { Grounded, monadTestnet } from "@grounded/sdk";
+import { Grounded, monadTestnet } from "@sajalydv/grounded-sdk";
 import { createWalletClient, http, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 

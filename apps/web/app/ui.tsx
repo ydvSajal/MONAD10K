@@ -1,4 +1,4 @@
-import { monadTestnet, type ScoreResult } from "@grounded/sdk";
+import { monadTestnet, type ScoreResult } from "@sajalydv/grounded-sdk";
 import Link from "next/link";
 import { formatUnits, type Hex } from "viem";
 

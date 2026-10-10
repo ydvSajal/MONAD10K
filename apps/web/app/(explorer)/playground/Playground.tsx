@@ -1,6 +1,6 @@
 "use client";
 
-import { BrowserPasskey, Grounded, monadTestnet, type SavedPasskey, type ScoreResult } from "@grounded/sdk";
+import { BrowserPasskey, Grounded, monadTestnet, type SavedPasskey, type ScoreResult } from "@sajalydv/grounded-sdk";
 import { useEffect, useMemo, useState } from "react";
 import { createPublicClient, createWalletClient, erc20Abi, formatEther, formatUnits, http, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";

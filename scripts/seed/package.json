@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@grounded/sdk": "workspace:*",
+    "@sajalydv/grounded-sdk": "workspace:*",
     "viem": "^2.21.0"
   },
   "devDependencies": {

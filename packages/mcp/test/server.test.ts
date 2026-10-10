@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { Grounded, type ScoreResult } from "@grounded/sdk";
+import { Grounded, type ScoreResult } from "@sajalydv/grounded-sdk";
 import { describe, expect, it } from "vitest";
 
 import { createServer, type Reader } from "../src/server.js";

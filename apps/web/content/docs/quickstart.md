@@ -3,7 +3,7 @@
 Check whether an ERC-8004 agent is trustworthy before you pay it, in a few lines.
 
 > **Pre-release.** Grounded's contracts are live on Monad testnet, and the SDK defaults to those addresses.
-> `@grounded/sdk` is not on npm yet, so install it from this repository. The local fork steps below still work
+> `@sajalydv/grounded-sdk` is not on npm yet, so install it from this repository. The local fork steps below still work
 > for testing without spending testnet MON.
 
 ## What you get
@@ -20,7 +20,7 @@ You need Node 20+, pnpm 9 and [Foundry](https://getfoundry.sh). On Windows, run 
 git clone https://github.com/ydvSajal/MONAD10K.git && cd MONAD10K
 git submodule update --init          # forge-std and OpenZeppelin; not --recursive, see below
 pnpm install
-pnpm --filter @grounded/sdk build
+pnpm --filter @sajalydv/grounded-sdk build
 ```
 
 The contracts import OpenZeppelin as a git submodule, so `forge` fails without that second line. Do not use
@@ -69,7 +69,7 @@ Reading a score needs no wallet.
 
 ```ts
 import { readFileSync } from "node:fs";
-import { Grounded } from "@grounded/sdk";
+import { Grounded } from "@sajalydv/grounded-sdk";
 
 const g = new Grounded({
   chain: "monad-testnet",
@@ -94,7 +94,7 @@ through the router, and retries. An untrusted agent is refused before any money 
 ```ts
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { Grounded, monadTestnet } from "@grounded/sdk";
+import { Grounded, monadTestnet } from "@sajalydv/grounded-sdk";
 
 const walletClient = createWalletClient({
   chain: monadTestnet,
@@ -123,7 +123,7 @@ Three steps, in order: pay, post ERC-8004 feedback, ground it. `rate` does the l
 it never posts feedback that could not be counted.
 
 ```ts
-import { SoftwareAuthenticator } from "@grounded/sdk";
+import { SoftwareAuthenticator } from "@sajalydv/grounded-sdk";
 
 const auth = SoftwareAuthenticator.random(addresses.rpId); // an in-memory passkey, for scripts and agents
 await g.bindPasskey(auth);                                  // once per reviewer
@@ -154,7 +154,7 @@ passkey and bind it, pay an agent 0.10 USDC, rate it, and watch its grounded sco
 From code, `BrowserPasskey` is the same thing as `SoftwareAuthenticator` for a browser:
 
 ```ts
-import { BrowserPasskey } from "@grounded/sdk";
+import { BrowserPasskey } from "@sajalydv/grounded-sdk";
 
 const passkey = await BrowserPasskey.create({ rpId: addresses.rpId, name: "me" }); // prompts the user
 await g.bindPasskey(passkey);

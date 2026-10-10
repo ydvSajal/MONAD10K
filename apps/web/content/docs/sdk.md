@@ -1,11 +1,11 @@
 # SDK reference
 
-`@grounded/sdk` is TypeScript on top of [viem](https://viem.sh). ESM and CJS builds, no framework dependency.
-Not on npm yet: build it from the repository (`pnpm --filter @grounded/sdk build`).
+`@sajalydv/grounded-sdk` is TypeScript on top of [viem](https://viem.sh). ESM and CJS builds, no framework dependency.
+Not on npm yet: build it from the repository (`pnpm --filter @sajalydv/grounded-sdk build`).
 
 ```ts
-import { Grounded, SoftwareAuthenticator, monadTestnet } from "@grounded/sdk";
-import { groundedPaywall, memoryReceiptStore } from "@grounded/sdk/server"; // seller side
+import { Grounded, SoftwareAuthenticator, monadTestnet } from "@sajalydv/grounded-sdk";
+import { groundedPaywall, memoryReceiptStore } from "@sajalydv/grounded-sdk/server"; // seller side
 ```
 
 ## `new Grounded(config)`
@@ -100,7 +100,7 @@ you name a ceiling.
 If the seller still answers 402 after payment and three retries (its RPC can be a block behind yours),
 `PaymentNotAcceptedError` carries the `receiptId` so you can retry later.
 
-### `groundedPaywall({ grounded, agentId, price, store })` from `@grounded/sdk/server`
+### `groundedPaywall({ grounded, agentId, price, store })` from `@sajalydv/grounded-sdk/server`
 
 Hono-style middleware for sellers. See the [402 scheme](/docs/402-scheme). `memoryReceiptStore()` is enough
 for one process; use a database-backed `ReceiptStore` (`markUsed(receiptId): Promise<boolean>`) if you restart

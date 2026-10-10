@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.78",
-    "@grounded/sdk": "workspace:*",
+    "@sajalydv/grounded-sdk": "workspace:*",
     "ai": "^6.0.291",
     "viem": "^2.21.0",
     "zod": "^3.25.76"
