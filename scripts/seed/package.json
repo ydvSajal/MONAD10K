@@ -2,7 +2,7 @@
   "name": "@grounded/seed",
   "version": "0.0.0",
   "private": true,
-  "description": "Demo data on an anvil fork: an honest agent, a Sybil-inflated agent, and a rejected wash rating",
+  "description": "Demo data (anvil fork, or a live chain with SEED_FUNDER_KEY): an honest agent, a Sybil-inflated agent, and a rejected wash rating",
   "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",

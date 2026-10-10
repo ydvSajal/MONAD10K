@@ -1,4 +1,6 @@
-// Demo data for the explorer, on an anvil fork of Monad testnet only.
+// Demo data for the explorer. On an anvil fork, wallets are funded with cheat codes. On a live chain,
+// set SEED_FUNDER_KEY to a wallet holding ~4 MON + 1 USDC; it funds each generated wallet by transfer
+// (leftover dust stays in the throwaway wallets).
 //
 //   A  honest:      5 paying reviewers rate it well.
 //   B  sybil:       2 paying reviewers rate it badly, then 10 unpaid wallets post 100s straight to
@@ -42,17 +44,28 @@ const transport = http(rpcUrl);
 const pub = createPublicClient({ chain: monadTestnet, transport });
 const anvil = createTestClient({ chain: monadTestnet, mode: "anvil", transport });
 
-try {
-  await anvil.request({ method: "anvil_nodeInfo" } as never);
-} catch {
-  throw new Error(`${rpcUrl} is not an anvil node: the seed funds wallets with cheat codes and runs on a fork only`);
-}
+const funderKey = env.SEED_FUNDER_KEY as Hex | undefined;
+const isAnvil = await anvil.request({ method: "anvil_nodeInfo" } as never).then(() => true, () => false);
+if (!isAnvil && !funderKey) throw new Error(`${rpcUrl} is not an anvil node: set SEED_FUNDER_KEY to a funded wallet to seed a live chain`);
+const funder = isAnvil ? undefined : createWalletClient({ chain: monadTestnet, transport, account: privateKeyToAccount(funderKey!) });
 
 const USDC_UNITS = 10_000_000n; // 10 USDC per funded wallet
 let usdcSlot: bigint | undefined;
 
-/** Give `a` 10 MON and 10 USDC by writing the token's balance slot. */
-async function fund(a: Address) {
+/** Live chain: send `mon` and `usdc` from the funder. Fork: 10 MON + 10 USDC by writing the balance slot. */
+async function fund(a: Address, mon: string, usdc: bigint) {
+  if (funder) {
+    await pub.waitForTransactionReceipt({ hash: await funder.sendTransaction({ to: a, value: parseEther(mon) }) });
+    if (usdc > 0n) {
+      const hash = await funder.writeContract({ address: addresses.usdc, abi: erc20Abi, functionName: "transfer", args: [a, usdc] });
+      await pub.waitForTransactionReceipt({ hash });
+    }
+    // Monad checks a sender's balance against state a few blocks back, so a wallet funded in the last
+    // block still looks empty ("Signer had insufficient balance"). Wait it out.
+    const funded = await pub.getBlockNumber();
+    while ((await pub.getBlockNumber()) < funded + 4n) await new Promise((r) => setTimeout(r, 500));
+    return;
+  }
   await anvil.setBalance({ address: a, value: parseEther("10") });
   const slotOf = (s: bigint) => keccak256(encodeAbiParameters([{ type: "address" }, { type: "uint256" }], [a, s]));
   const balance = () => pub.readContract({ address: addresses.usdc, abi: erc20Abi, functionName: "balanceOf", args: [a] });
@@ -67,9 +80,10 @@ async function fund(a: Address) {
   throw new Error("could not find the USDC balance slot");
 }
 
-async function actor(key: Hex = generatePrivateKey()) {
-  const account = privateKeyToAccount(key);
-  await fund(account.address);
+// Live-chain budgets at ~100 gwei: a reviewer spends ~0.13 MON (bind + pay + rate + ground) and pays 0.10 USDC.
+async function actor(mon = "0.3", usdc = 100_000n) {
+  const account = privateKeyToAccount(generatePrivateKey());
+  await fund(account.address, mon, usdc);
   const wallet = createWalletClient({ chain: monadTestnet, transport, account });
   const g = new Grounded({ chain: "monad-testnet", publicClient: pub, walletClient: wallet, addresses });
   return { account, wallet, g };
@@ -132,7 +146,7 @@ async function paidRating(agentId: bigint, score: number, amount = "0.10") {
 
 /** Unpaid ERC-8004 feedback: counted by the raw average, ignored by Grounded. */
 async function sybilRating(agentId: bigint, value: number) {
-  const s = await actor();
+  const s = await actor("0.15", 0n);
   await pub.waitForTransactionReceipt({
     hash: await s.wallet.writeContract({
       address: addresses.erc8004Reputation,
@@ -143,7 +157,7 @@ async function sybilRating(agentId: bigint, value: number) {
   });
 }
 
-const owner = await actor();
+const owner = await actor("0.3");
 const agentA = await registerAgent(owner, "honest");
 const agentB = await registerAgent(owner, "sybil");
 const agentC = await registerAgent(owner, "wash");
