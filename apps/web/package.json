@@ -5,7 +5,7 @@
   "description": "Explorer and read API: raw ERC-8004 vs payment-grounded scores",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
