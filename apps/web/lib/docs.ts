@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { marked } from "marked";
@@ -15,8 +15,11 @@ export const DOCS = [
   { slug: "ai-agents", title: "AI agents", group: "Integrate" },
 ] as const;
 
+// Next runs from apps/web, but `pnpm --dir` or a monorepo-root start sets cwd to the repo root.
+const DIR = ["content/docs", "apps/web/content/docs"].map((d) => join(process.cwd(), d)).find(existsSync) ?? join(process.cwd(), "content/docs");
+
 export function renderDoc(slug: string): string | null {
   if (!DOCS.some((d) => d.slug === slug)) return null;
   // Our own files, written in this repo: rendered without sanitising.
-  return marked.parse(readFileSync(join(process.cwd(), "content/docs", `${slug}.md`), "utf8"), { async: false });
+  return marked.parse(readFileSync(join(DIR, `${slug}.md`), "utf8"), { async: false });
 }

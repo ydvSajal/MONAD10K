@@ -10,11 +10,16 @@ const VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4";
 
 const LINKS = [
+  ["Agents", "/agents"],
+  ["Playground", "/playground"],
   ["How it works", "#how"],
-  ["SDK", "#sdk"],
   ["Docs", "/docs"],
-  ["Contact", "https://github.com/ydvSajal/MONAD10K"],
+  ["GitHub", "https://github.com/ydvSajal/MONAD10K"],
 ] as const;
+
+// The product first: a new visitor lands on live agents, then can rate one in the playground.
+const PRIMARY = ["Explore agents", "/agents"] as const;
+const SECONDARY = ["Try the app layer", "https://gigtrust-grounded.vercel.app/"] as const;
 
 /** Full-screen looping-video hero. Client only for the mobile menu; everything else is static markup. */
 export function Hero() {
@@ -63,8 +68,8 @@ export function Hero() {
             </Link>
           ))}
         </nav>
-        <Link href="/docs/quickstart" className="hs-pill hs-pill-nav">
-          <span>Get Started</span>
+        <Link href={PRIMARY[1]} className="hs-pill hs-pill-nav">
+          <span>{PRIMARY[0]}</span>
         </Link>
         <button
           type="button"
@@ -92,11 +97,11 @@ export function Hero() {
             ))}
           </ul>
           <div className="hs-menu-foot">
-            <Link href="/docs/quickstart" className="hs-pill" onClick={() => setOpen(false)} tabIndex={open ? 0 : -1}>
-              <span>Get Started</span>
+            <Link href={PRIMARY[1]} className="hs-pill" onClick={() => setOpen(false)} tabIndex={open ? 0 : -1}>
+              <span>{PRIMARY[0]}</span>
             </Link>
-            <Link href="/docs/scoring" className="hs-ghost" onClick={() => setOpen(false)} tabIndex={open ? 0 : -1}>
-              How scoring works
+            <Link href={SECONDARY[1]} target="_blank" rel="noopener noreferrer" className="hs-ghost" onClick={() => setOpen(false)} tabIndex={open ? 0 : -1}>
+              {SECONDARY[0]}
             </Link>
           </div>
         </div>
@@ -111,11 +116,11 @@ export function Hero() {
           <span>paid them onchain. A contract computes it, not a company.</span>
         </p>
         <div className="hs-actions">
-          <Link href="/docs/quickstart" className="hs-pill hs-pill-cta">
-            <span>Get Started</span>
+          <Link href={PRIMARY[1]} className="hs-pill hs-pill-cta">
+            <span>{PRIMARY[0]}</span>
           </Link>
-          <Link href="/docs/scoring" className="hs-ghost">
-            How scoring works
+          <Link href={SECONDARY[1]} target="_blank" rel="noopener noreferrer" className="hs-ghost">
+            {SECONDARY[0]} ↗
           </Link>
         </div>
       </div>
