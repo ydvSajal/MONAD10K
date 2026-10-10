@@ -56,7 +56,7 @@ Legend: `[x]` done · `[ ]` open · `[~]` partly done · `[-]` cut on purpose
 - [ ] Fresh-clone e2e against testnet (so far only against a fork)
 - [ ] Verify contract sources on the Monad explorer
 - [ ] Tag `v0.1.0` after npm publish
-- [ ] Judge access doc: URLs, addresses, 5-minute judge path (9 Oct)
+- [x] Judge access doc: `docs/JUDGES.md` (10 Oct)
 
 ### Cut or not built (on purpose)
 - [-] Envio indexer (explorer reads `getLogs`; can swap later)
