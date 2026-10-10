@@ -1,5 +1,5 @@
 import { erc8004ReputationAbi, groundedReputationAbi, receiptRegistryAbi, reviewerRegistryAbi } from "@sajalydv/grounded-sdk";
-import { parseEventLogs, type Address, type Hex } from "viem";
+import { parseEventLogs, toEventSelector, type Address, type Hex } from "viem";
 
 import type { Chain } from "./grounded";
 
@@ -61,6 +61,63 @@ async function getLogs(client: Chain["client"], args: Parameters<Chain["client"]
   }
 }
 
+/** Etherscan V2 (free tier covers Monad testnet) serves getLogs over any block range: 4 calls instead of one per 100 blocks. */
+const ETHERSCAN_KEY = process.env.ETHERSCAN_API_KEY;
+const ETHERSCAN_PAGE = 1000;
+/** Free tier allows 3 calls/s per key; space every call, across concurrent refreshes too. */
+let nextCallAt = 0;
+async function throttle() {
+  const wait = nextCallAt - Date.now();
+  nextCallAt = Math.max(Date.now(), nextCallAt) + 400;
+  if (wait > 0) await sleep(wait);
+}
+
+interface ExplorerLog {
+  address: Address;
+  topics: Hex[];
+  data: Hex;
+  blockNumber: bigint;
+  transactionHash: Hex;
+  logIndex: number;
+}
+
+// ponytail: Etherscan caps page × offset at 10,000, so one contract tops out at 10k logs per refresh window.
+// Past that, advance fromBlock by the last block seen instead of paging.
+async function explorerLogs(address: Address, from: bigint, to: bigint, topic0?: Hex): Promise<ExplorerLog[]> {
+  const out: ExplorerLog[] = [];
+  for (let page = 1; ; page++) {
+    const q = new URLSearchParams({
+      chainid: "10143",
+      module: "logs",
+      action: "getLogs",
+      address,
+      fromBlock: String(from),
+      toBlock: String(to),
+      page: String(page),
+      offset: String(ETHERSCAN_PAGE),
+      apikey: ETHERSCAN_KEY!,
+      ...(topic0 ? { topic0 } : {}),
+    });
+    let body: { status: string; message: string; result: unknown } | undefined;
+    for (let attempt = 0; ; attempt++) {
+      await throttle();
+      body = await (await fetch(`https://api.etherscan.io/v2/api?${q}`, { cache: "no-store" })).json();
+      // Free tier is 5 calls/s; "Max calls per sec" is transient.
+      if (attempt >= 4 || typeof body!.result !== "string" || !/rate limit|max calls/i.test(body!.result)) break;
+      await sleep(500 * 2 ** attempt);
+    }
+    if (body!.status !== "1") {
+      if (/no records/i.test(body!.message)) return out;
+      throw new Error(`etherscan getLogs ${address}: ${String(body!.result)}`);
+    }
+    const rows = body!.result as { address: Address; topics: Hex[]; data: Hex; blockNumber: Hex; transactionHash: Hex; logIndex: Hex }[];
+    for (const r of rows) {
+      out.push({ ...r, topics: r.topics.filter(Boolean), blockNumber: BigInt(r.blockNumber), logIndex: r.logIndex === "0x" ? 0 : Number(r.logIndex) });
+    }
+    if (rows.length < ETHERSCAN_PAGE) return out;
+  }
+}
+
 // The whole scan is one accumulator that only ever moves forward: the first request reads from the
 // deploy block, every later one reads just the blocks since. Monad finalises in one slot, so there is
 // no reorg to undo.
@@ -88,6 +145,16 @@ async function refresh({ client, deployment: d }: Chain): Promise<Activity> {
   for (let from = start; from <= head; from += CHUNK) ranges.push([from, from + CHUNK - 1n < head ? from + CHUNK - 1n : head]);
 
   const address = [d.receiptRegistry, d.groundedReputation, d.reviewerRegistry, d.erc8004Reputation];
+  if (ETHERSCAN_KEY) {
+    const ours: ExplorerLog[][] = [];
+    for (const a of address.slice(0, 3)) ours.push(await explorerLogs(a, start, head));
+    const revoked = await explorerLogs(d.erc8004Reputation, start, head, toEventSelector(events.find((e) => e.name === "FeedbackRevoked")!));
+    const logs = [...ours.flat(), ...revoked].sort((a, b) => Number(a.blockNumber - b.blockNumber) || a.logIndex - b.logIndex);
+    for (const log of parseEventLogs({ abi, logs: logs as never, strict: false })) fold(log);
+    data.toBlock = head;
+    refreshedAt = Date.now();
+    return data;
+  }
   for (let i = 0; i < ranges.length; i += PARALLEL) {
     const started = Date.now();
     const batch = ranges.slice(i, i + PARALLEL);
