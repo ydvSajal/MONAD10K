@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { getActivity } from "../lib/events";
 import { getChain } from "../lib/grounded";
 import { CopyCommand } from "./CopyCommand";
+import { DemoVideo } from "./DemoVideo";
 import { Hero } from "./Hero";
 import { Motion } from "./Motion";
 import { SiteFooter } from "./SiteFooter";
@@ -185,6 +186,8 @@ export default function Landing() {
     <div className="min-h-[100dvh] bg-ink font-sans text-[19px] leading-normal text-paper antialiased">
       <Motion>
         <Hero />
+
+        <DemoVideo />
 
         <Suspense fallback={<div className="h-24" aria-hidden />}>
           <Live />
