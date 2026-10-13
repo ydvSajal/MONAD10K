@@ -197,8 +197,8 @@ Expiry is evaluated on read, so nobody has to run a job to age receipts out, and
 
 Grounded runs on Monad Testnet (10143) because three things it needs exist there:
 
-- **P256 precompile `0x0100`**: a rating is signed with a passkey and verified onchain for about 150k gas. On a chain without the precompile this needs a ~300k+ Solidity verifier or an offchain trusted signer.
-- **Cheap, fast blocks**: one rating is three transactions (pay, `giveFeedback`, `ground`). That only works as a habit if each is cents and a second.
+- **P256 precompile `0x0100`**: a rating is signed with a passkey and verified onchain for about 150k gas. Without the precompile this needs a far costlier Solidity P256 verifier or an offchain trusted signer.
+- **Cheap, fast blocks**: one rating is three transactions (pay, `giveFeedback`, `ground`). That only works as a habit if each step is cheap and quick.
 - **Live ERC-8004 registries and USDC (EIP-3009)** on the same chain, so the receipt, the feedback and the score all stay onchain.
 
 Deployed 4 Oct 2026 (block 68082112), all four sources verified on [testnet.monadscan.com](https://testnet.monadscan.com):
