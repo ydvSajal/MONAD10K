@@ -193,6 +193,43 @@ stateDiagram-v2
 
 Expiry is evaluated on read, so nobody has to run a job to age receipts out, and no one can be paid to do it.
 
+## Why Monad
+
+Grounded runs on Monad Testnet (10143) because three things it needs exist there:
+
+- **P256 precompile `0x0100`**: a rating is signed with a passkey and verified onchain for about 150k gas. On a chain without the precompile this needs a ~300k+ Solidity verifier or an offchain trusted signer.
+- **Cheap, fast blocks**: one rating is three transactions (pay, `giveFeedback`, `ground`). That only works as a habit if each is cents and a second.
+- **Live ERC-8004 registries and USDC (EIP-3009)** on the same chain, so the receipt, the feedback and the score all stay onchain.
+
+Deployed 4 Oct 2026 (block 68082112), all four sources verified on [testnet.monadscan.com](https://testnet.monadscan.com):
+
+| Contract | Address |
+|---|---|
+| ReviewerRegistry | `0xFb38DcB72C222d3943579b4F2c4C91ebcBE4eBa6` |
+| ReceiptRegistry | `0xa89b76Ea9AcEA12A66Fb23d318219b9119362301` |
+| ReceiptRouter | `0xab442c3cbc2997a6218FEA0DD253c3717edfc62e` |
+| GroundedReputation | `0xaDDd1f2F876CD253C57177b675905Bdb0061bF82` |
+
+Live demo: https://grounded.sajal.sbs. Judge walkthrough: [`docs/JUDGES.md`](docs/JUDGES.md).
+
+## Attribution and AI disclosure
+
+**AI coding tools:** this project was built with [Claude Code](https://claude.com/claude-code) (Anthropic) as a coding assistant, under the author's direction and review. Commits it helped write carry a `Co-Authored-By` trailer. Tests, fork runs and on-chain checks were run and read by the author.
+
+**Build window:** no pre-existing code. The first commit is 17 Sep 2026 and everything in this repo was written during the hackathon.
+
+**Third-party code and data, used unmodified unless noted:**
+
+- [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) v5.7.0 (MIT): `WebAuthn`, `P256`, ERC-20 and EIP-712 helpers. Git submodule.
+- [forge-std](https://github.com/foundry-rs/forge-std) v1.16.2 (MIT/Apache-2.0): tests only. Git submodule.
+- [erc-8004/erc-8004-contracts](https://github.com/erc-8004/erc-8004-contracts): ABIs copied to `contracts/abi/erc8004/` to call the deployed registries. We do not modify or redeploy ERC-8004.
+- TypeScript: [viem](https://viem.sh), [ox](https://github.com/wevm/ox), [zod](https://zod.dev), [Hono](https://hono.dev), [Next.js](https://nextjs.org), [GSAP](https://gsap.com), [AI SDK](https://ai-sdk.dev), [marked](https://marked.js.org). See `pnpm-lock.yaml` for the full tree.
+- Circle USDC on Monad testnet: called, not copied.
+
+## License
+
+[MIT](LICENSE)
+
 ## Keys we hold and why
 
 Nothing in the protocol has an owner, admin, pauser or upgrade path. Config is `immutable`, set once at construction. There is no setter to compromise and no key that can rewrite a score.
@@ -224,6 +261,7 @@ Rule: a third-party piece ships only if Grounded needs it with no prize attached
 | **Testnet deploy**, `deployments/10143.json` | **Deployed 4 Oct** (block 68082112, rpId `grounded.sajal.sbs`); wiring verified on chain; the SDK uses these addresses by default |
 | Playground (`/playground`), `BrowserPasskey`, `/api/drip` faucet | Built; browser E2E passes in real Chrome with a virtual WebAuthn authenticator. **Not tried on a real device** (Touch ID, phone), and no Privy email login: a browser-stored test wallet instead |
 | AI: `@sajalydv/grounded-mcp` (read-only MCP tool), model-driven buyer (`demo-buyer agent`) | Built; tested with a scripted model and run once with a real model (OpenRouter free tier, on a fork); KIMI/Qwen not run, not claimed |
-| npm publish, testnet seed data, Envio indexer | Not done |
+| `@sajalydv/grounded-sdk@0.1.0` on npm; seeded testnet agents 2118 (honest), 2119 (sybil), 2121 (wash rejected) | Done |
+| Envio indexer | Not built |
 
 Contracts are **unaudited and testnet-only**. Do not put real money behind them.
