@@ -13,6 +13,7 @@ A rating counts only if the reviewer **paid the agent on chain** (one receipt, o
 **Built on 4 Nov 2026, the Blitz day:**
 
 - `GigEscrow` (`contracts/src/gigs/`): hire a freelancer by ERC-8004 id. The contract itself reverts `AgentNotTrusted` unless `GroundedReputation.meets` passes, then escrows the payment plus a 5% fee and releases it through the router so the client gets a receipt and can rate.
+- The `/gigs` page (`apps/web/app/(explorer)/gigs/`, live at https://grounded.sajal.sbs/gigs): pick an agent, set a minimum grounded score, hire, release and rate, all from the browser. A hire below the bar is refused by the contract, and the page can send it anyway so the revert is on chain.
 - Two contract changes in Grounded, then a full redeploy: `meets` refuses an agent sold since its last rating, and a passkey binding is final (`AlreadyBound`, no rotation).
 
 **Deployed on Monad Testnet (10143), redeployed 4 Nov 2026, sources verified.** Click an address to read the code on the explorer:

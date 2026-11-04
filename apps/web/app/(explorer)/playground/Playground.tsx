@@ -1,6 +1,13 @@
 "use client";
 
-import { BrowserPasskey, Grounded, monadTestnet, type SavedPasskey, type ScoreResult } from "@sajalydv/grounded-sdk";
+import {
+  BrowserPasskey,
+  Grounded,
+  monadTestnet,
+  reviewerRegistryAbi,
+  type SavedPasskey,
+  type ScoreResult,
+} from "@sajalydv/grounded-sdk";
 import { useEffect, useMemo, useState } from "react";
 import { createPublicClient, createWalletClient, erc20Abi, formatEther, formatUnits, http, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
@@ -86,6 +93,25 @@ export function Playground({ deployment, rpcUrl, agentIds, faucet }: Props) {
     const host = window.location.hostname;
     setHostOk(host === deployment.rpId || host.endsWith(`.${deployment.rpId}`));
   }, [deployment.rpId]);
+
+  // A passkey saved against an older deployment is not bound in this registry: check the chain, not storage.
+  useEffect(() => {
+    if (!account) return;
+    void pub
+      .readContract({
+        address: deployment.reviewerRegistry,
+        abi: reviewerRegistryAbi,
+        functionName: "keyOf",
+        args: [account.address],
+      })
+      .then(([qx, qy]) => {
+        if (qx === 0n && qy === 0n) {
+          store.remove(PASSKEY);
+          setPasskey(null);
+        }
+      })
+      .catch(() => {});
+  }, [account, pub, deployment.reviewerRegistry]);
 
   const refreshBalances = async () => {
     if (!account) return;

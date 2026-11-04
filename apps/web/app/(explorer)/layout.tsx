@@ -6,6 +6,7 @@ import { SiteFooter } from "../SiteFooter";
 
 const NAV = [
   ["Agents", "/agents"],
+  ["Gigs", "/gigs"],
   ["Playground", "/playground"],
   ["Docs", "/docs"],
 ] as const;
