@@ -39,6 +39,13 @@ export class NoPasskeyBoundError extends GroundedError {
   }
 }
 
+/** `bind` is final: a wallet that already has a passkey cannot bind another. Use a new wallet. */
+export class PasskeyAlreadyBoundError extends GroundedError {
+  constructor(readonly reviewer: string) {
+    super(`${reviewer} already has a passkey bound. A binding is final: rate from the same passkey, or use a new wallet`);
+  }
+}
+
 export class ReceiptAlreadyUsedError extends GroundedError {
   constructor(readonly receiptId: bigint) {
     super(`receipt ${receiptId} was already used for a rating`);

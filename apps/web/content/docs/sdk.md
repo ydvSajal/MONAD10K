@@ -75,6 +75,26 @@ string such as `"0.05"`, at least `"0.01"`. `mode`:
 
 Binds a passkey to your address in `ReviewerRegistry`. Final: one passkey per wallet, so a second call reverts `AlreadyBound`. A lost passkey means rating from a new wallet.
 
+### `hasPasskey(address?): Promise<boolean>`
+
+True when the address (default: the connected wallet) has a passkey bound. Check this before `bindPasskey`, which now
+throws `PasskeyAlreadyBoundError` for a bound wallet instead of sending a transaction that would revert.
+
+### `registerAgent({ agentURI }): Promise<{ agentId, txHash }>`
+
+Registers a new ERC-8004 agent owned by the connected wallet. On the current Monad testnet registry the payout wallet
+defaults to the owner (checked live), but read `payoutWallet(agentId)` afterwards: older registrations returned null.
+
+### `setPayoutWallet({ agentId, payout }): Promise<Hex>`
+
+Points an agent at a payout wallet. The registry needs that wallet's own EIP-712 consent, so `payout` is an account that
+can `signTypedData` (a viem local account); the connected wallet, the owner, sends the transaction. The consent
+expires in 2 minutes. Pass the owner's own account to pay the owner.
+
+### `agentURI(agentId): Promise<string | null>`
+
+The profile URI the agent was registered with (`tokenURI`), or null when it cannot be read.
+
 ### `rate({ receiptId, score, tag?, authenticator, deadlineSec? }): Promise<{ feedbackTx, groundTx, feedbackIndex }>`
 
 1. Dry-runs the grounding, so a rating that could not count is refused **before** feedback is posted.
