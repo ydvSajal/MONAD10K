@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
 
+# A newer push cancels the run it supersedes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 # gitleaks-action lists a PR's commits through the API; a private repo's default token cannot.
 permissions:
   contents: read
@@ -19,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true # OpenZeppelin's own nested submodules are test-only and slow
       - uses: foundry-rs/foundry-toolchain@v1
       - run: forge fmt --check
       - run: forge build --sizes
@@ -50,7 +55,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # SDK tests that need a deployment are skipped without GROUNDED_TEST_RPC,
       # so CI stays offline and deterministic (same rule as the Foundry fork tests).
-      # Build first: apps typecheck against the SDK's emitted dist/ types.
-      - run: pnpm -r build
+      # Build the packages first: apps typecheck against the SDK's emitted dist/ types. The Next.js app is
+      # built by Vercel on every PR, so building it here too only slows CI down.
+      - run: pnpm --filter "./packages/*" build
       - run: pnpm -r typecheck
       - run: pnpm -r test
