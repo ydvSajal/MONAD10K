@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Gigs · Grounded" };
 
-export default async function GigsPage() {
+export default async function GigsPage({ searchParams }: { searchParams: Promise<{ agent?: string }> }) {
+  const { agent } = await searchParams;
   const chain = getChain();
   if (!chain) return <NotDeployed />;
 
@@ -37,6 +38,7 @@ export default async function GigsPage() {
         escrow={GIG_ESCROW}
         rpcUrl={process.env.NEXT_PUBLIC_RPC_URL ?? null}
         agents={agents}
+        initialAgent={agent && /^\d{1,78}$/.test(agent) ? agent : undefined}
         faucet={Boolean(process.env.DRIP_PRIVATE_KEY)}
       />
     </>
