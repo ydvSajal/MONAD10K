@@ -11,6 +11,7 @@ export {
   NotDeployedError,
   AgentNotPayableError,
   NoPasskeyBoundError,
+  PasskeyAlreadyBoundError,
   ReceiptAlreadyUsedError,
   ContractRevertError,
   GroundFailedError,

@@ -34,6 +34,7 @@ import {
   GroundedError,
   GroundFailedError,
   NoPasskeyBoundError,
+  PasskeyAlreadyBoundError,
   NotDeployedError,
   NoWalletError,
   PaymentNotAcceptedError,
@@ -396,10 +397,90 @@ export class Grounded {
     return { receiptId: issued.args.id, txHash: receipt.transactionHash };
   }
 
+  /** True when `reviewer` (default: the connected wallet) has a passkey bound in ReviewerRegistry. */
+  async hasPasskey(reviewer?: Address): Promise<boolean> {
+    const who = reviewer ?? this.signer().account.address;
+    const [qx, qy] = await this.publicClient.readContract({
+      address: this.address("reviewerRegistry"),
+      abi: reviewerRegistryAbi,
+      functionName: "keyOf",
+      args: [who],
+    });
+    return qx !== 0n || qy !== 0n;
+  }
+
+  /**
+   * Register a new ERC-8004 agent owned by the connected wallet. `agentURI` is the agent's profile
+   * pointer (an https, ipfs or `data:` URI). Whether the payout wallet defaults to the owner depends
+   * on the registry version: read `payoutWallet(agentId)` afterwards, and call `setPayoutWallet` if
+   * it is null.
+   */
+  async registerAgent(args: { agentURI: string }): Promise<{ agentId: bigint; txHash: Hex }> {
+    const identity = this.address("erc8004Identity");
+    const receipt = await this.send(identity, erc8004IdentityAbi, "register", [args.agentURI]);
+    const registered = parseEventLogs({ abi: erc8004IdentityAbi, eventName: "Registered", logs: receipt.logs }).find(
+      (l) => isAddressEqual(l.address, identity),
+    );
+    if (!registered) throw new GroundedError(`no Registered event in ${receipt.transactionHash}`);
+    return { agentId: registered.args.agentId, txHash: receipt.transactionHash };
+  }
+
+  /**
+   * Set the wallet an agent is paid at. The registry wants the new wallet's own consent, so `payout`
+   * is an account that can sign (a viem local account, or a wallet client's account); the connected
+   * wallet, the agent's owner, sends the transaction. Pass the owner's own account to pay the owner.
+   */
+  async setPayoutWallet(args: {
+    agentId: bigint | number | string;
+    payout: { address: Address; signTypedData: Account["signTypedData"] };
+  }): Promise<Hex> {
+    const agentId = BigInt(args.agentId);
+    const identity = this.address("erc8004Identity");
+    const { account } = this.signer();
+    const [block, chainId] = await Promise.all([this.publicClient.getBlock(), this.publicClient.getChainId()]);
+    // The registry rejects a deadline more than 5 minutes out.
+    const deadline = block.timestamp + 120n;
+    const signature = await args.payout.signTypedData!({
+      domain: { name: "ERC8004IdentityRegistry", version: "1", chainId, verifyingContract: identity },
+      types: {
+        AgentWalletSet: [
+          { name: "agentId", type: "uint256" },
+          { name: "newWallet", type: "address" },
+          { name: "owner", type: "address" },
+          { name: "deadline", type: "uint256" },
+        ],
+      },
+      primaryType: "AgentWalletSet",
+      message: { agentId, newWallet: args.payout.address, owner: account.address, deadline },
+    });
+    const receipt = await this.send(identity, erc8004IdentityAbi, "setAgentWallet", [
+      agentId,
+      args.payout.address,
+      deadline,
+      signature,
+    ]);
+    return receipt.transactionHash;
+  }
+
+  /** The agent's profile URI as registered (`tokenURI`), or null when it cannot be read. */
+  async agentURI(agentIdInput: bigint | number | string): Promise<string | null> {
+    try {
+      return await this.publicClient.readContract({
+        address: this.address("erc8004Identity"),
+        abi: erc8004IdentityAbi,
+        functionName: "tokenURI",
+        args: [BigInt(agentIdInput)],
+      });
+    } catch {
+      return null;
+    }
+  }
+
   /** Bind this authenticator's passkey to the connected wallet. Final: a wallet binds once. */
   async bindPasskey(authenticator: Authenticator): Promise<Hex> {
     const registry = this.address("reviewerRegistry");
     const { account } = this.signer();
+    if (await this.hasPasskey(account.address)) throw new PasskeyAlreadyBoundError(account.address);
     const [{ x, y }, nonce] = await Promise.all([
       authenticator.publicKey(),
       this.publicClient.readContract({

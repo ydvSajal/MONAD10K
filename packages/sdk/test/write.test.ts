@@ -5,7 +5,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 import { Grounded } from "../src/grounded.js";
 import { SoftwareAuthenticator } from "../src/authenticator.js";
-import { NoWalletError } from "../src/errors.js";
+import { NoWalletError, PasskeyAlreadyBoundError } from "../src/errors.js";
 import { monadTestnet } from "../src/chain.js";
 
 const P256_N = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n;
@@ -80,5 +80,19 @@ describe("write path (no network)", () => {
     await expect(g.pay({ agentId: 1n, amount: "0.001" })).rejects.toThrow(/at least 0.01/);
     await expect(g.pay({ agentId: 1n, amount: "1e3" })).rejects.toThrow(/plain decimal/);
     await expect(g.pay({ agentId: 1n, amount: "1", mode: "wire" as never })).rejects.toThrow();
+  });
+
+  it("hasPasskey reads the registry, and bindPasskey refuses a bound wallet before sending anything", async () => {
+    const stub = (key: [bigint, bigint]) =>
+      new Grounded({
+        chain: "monad-testnet",
+        walletClient: wallet,
+        publicClient: { readContract: async () => key } as never,
+      });
+
+    expect(await stub([0n, 0n]).hasPasskey()).toBe(false);
+    expect(await stub([1n, 2n]).hasPasskey()).toBe(true);
+    // The stub has no other method, so reaching the nonce or send step would throw a TypeError instead.
+    await expect(stub([1n, 2n]).bindPasskey(auth)).rejects.toBeInstanceOf(PasskeyAlreadyBoundError);
   });
 });

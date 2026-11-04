@@ -1,6 +1,6 @@
 {
     "name":  "@sajalydv/grounded-sdk",
-    "version":  "0.1.0",
+    "version":  "0.2.0",
     "description":  "Payment-grounded reputation for ERC-8004 agents on Monad",
     "license":  "MIT",
     "type":  "module",
