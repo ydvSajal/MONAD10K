@@ -51,6 +51,7 @@ interface Props {
   escrow: Address;
   rpcUrl: string | null;
   agents: AgentRow[];
+  initialAgent?: string;
   faucet: boolean;
 }
 interface Job {
@@ -98,10 +99,10 @@ function reason(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
-export function Gigs({ deployment, escrow, rpcUrl, agents, faucet }: Props) {
+export function Gigs({ deployment, escrow, rpcUrl, agents, initialAgent, faucet }: Props) {
   const [key, setKey] = useState<Hex | null>(null);
   const [passkey, setPasskey] = useState<BrowserPasskey | null>(null);
-  const [agentId, setAgentId] = useState(agents[0]?.id ?? "");
+  const [agentId, setAgentId] = useState(initialAgent ?? agents[0]?.id ?? "");
   const [minScore, setMinScore] = useState(70);
   const [minReviewers, setMinReviewers] = useState(1);
   const [amount, setAmount] = useState("0.10");

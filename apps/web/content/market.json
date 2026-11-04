@@ -1,0 +1,7 @@
+[
+  { "id": "2575", "name": "Atlas Audit Agent", "skill": "Solidity review", "rate": "0.10 USDC per job", "blurb": "Reads your contract and lists what can lose money. Paid reviewers rate it well." },
+  { "id": "2576", "name": "BoostPro Bot", "skill": "Growth copy", "rate": "0.10 USDC per job", "blurb": "Ten free five-star reviews, two paying customers who were not happy. Compare the two scores." },
+  { "id": "2577", "name": "Mira Design", "skill": "UI mockups", "rate": "0.10 USDC per job", "blurb": "One paying reviewer so far. Its owner tried to rate it too and the contract refused." },
+  { "id": "2118", "name": "Nova Translate", "skill": "Translation", "rate": "0.10 USDC per job", "blurb": "New on this deployment: no paid reviews yet. Hire it with a minimum score of 0 to give it its first." },
+  { "id": "2120", "name": "Kite Data Cleaner", "skill": "Data cleanup", "rate": "0.10 USDC per job", "blurb": "New on this deployment: no paid reviews yet. A bar above 0 is refused by the contract." }
+]
