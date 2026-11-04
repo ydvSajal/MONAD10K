@@ -4,15 +4,15 @@ Four contracts plus a helper, Solidity 0.8.28, EVM `cancun`, on Monad Testnet (c
 owner, admin, pauser or upgrade path.** Configuration is `immutable` or `constant`, set once at construction.
 Every state change emits an event. Custom errors only.
 
-> **Deployed on Monad Testnet** (4 Oct 2026, block 68082112, rpId `grounded.sajal.sbs`). Addresses are in
+> **Deployed on Monad Testnet** (redeployed 4 Nov 2026, block 76889685, rpId `grounded.sajal.sbs`). Addresses are in
 > `deployments/10143.json` and are the SDK's defaults:
 >
 > | Contract | Address |
 > |---|---|
-> | `ReviewerRegistry` | `0xFb38DcB72C222d3943579b4F2c4C91ebcBE4eBa6` |
-> | `ReceiptRegistry` | `0xa89b76Ea9AcEA12A66Fb23d318219b9119362301` |
-> | `ReceiptRouter` | `0xab442c3cbc2997a6218FEA0DD253c3717edfc62e` |
-> | `GroundedReputation` | `0xaDDd1f2F876CD253C57177b675905Bdb0061bF82` |
+> | `ReviewerRegistry` | `0x41B65e7E027FB47cF4DE964F4F82A76Bc6BC5429` |
+> | `ReceiptRegistry` | `0x2E3FD91A619b39210DC1E1Ee94bDa53bD6b1Cf2c` |
+> | `ReceiptRouter` | `0xbE9dbCc36240b358233B2019253178B02D44db54` |
+> | `GroundedReputation` | `0xCA50d5222566F313D9fb890F2bce144381445356` |
 
 They sit on top of two contracts we did not write and do not control: the ERC-8004 Identity and Reputation
 registries, and USDC (see [Threat model](/docs/threat-model)).
@@ -63,12 +63,14 @@ registries, and USDC (see [Threat model](/docs/threat-model)).
 - `bind(qx, qy, proof)`: the passkey `(qx, qy)` signs an EIP-712 `Bind(reviewer, qx, qy, nonce)` challenge,
   verified through the P-256 precompile with user verification required. A key can belong to one reviewer
   only.
-- Calling `bind` again **rotates** the key. Only the *new* key signs the proof: the old key is not asked.
-  See the [threat model](/docs/threat-model).
+- A binding is **final**: one passkey per wallet. Calling `bind` again reverts `AlreadyBound`, so a stolen
+  wallet cannot swap in its own key. A lost passkey means rating from a new wallet. See the
+  [threat model](/docs/threat-model).
 - Views: `keyOf(reviewer) -> (qx, qy)`, `reviewerOf(keyHash)`, `nonces(reviewer)`, `bindDigest(...)`.
 - Constructor takes `rpIdHash = sha256(rpId)`, the WebAuthn relying party the passkey is scoped to. Changing
   the domain means redeploying, and reviewer bindings do not carry over.
-- Event: `ReviewerBound(reviewer, keyHash, qx, qy)`. Errors: `BadSignature()`, `KeyAlreadyBound(keyHash)`.
+- Event: `ReviewerBound(reviewer, keyHash, qx, qy)`. Errors: `BadSignature()`, `KeyAlreadyBound(keyHash)`,
+  `AlreadyBound(reviewer)`.
 
 ## `GroundedReputation`
 

@@ -82,7 +82,7 @@ An agent with no live ratings has mass 0 and score 0. That 0 means "unknown", no
 | Call | Returns |
 |---|---|
 | `scoreOf(agentId)` | `median`, `reviewers`, `receipts`, `paid`, `weightMass`, `updatedAt`, `ownerChangedAt` |
-| `meets(agentId, minScore, minReviewers)` | `true` when `reviewers >= minReviewers` **and** `median >= minScore` |
+| `meets(agentId, minScore, minReviewers)` | `true` when `reviewers >= minReviewers` **and** `median >= minScore`, and the agent has not been sold since its last rating |
 | `liveRating(agentId, reviewer)` | that reviewer's `bucket`, `weight`, `feedbackIndex`, `isDispute`, `exists` |
 | `disputeCount(agentId)` | count of `dispute` ratings |
 | `lastOwnerOf(agentId)` | owner at the agent's last grounded rating |
@@ -91,9 +91,9 @@ An agent with no live ratings has mass 0 and score 0. That 0 means "unknown", no
 
 ## Two quirks worth knowing
 
-- **`ownerChangedAt` is lazy.** It moves on the next rating after a transfer, not at the transfer. To catch a
-  sale since the last rating, compare `lastOwnerOf` with the registry's `ownerOf`. `check` with
-  `ratingsAfterOwnerChange: false` does this for you.
+- **`ownerChangedAt` is lazy.** It moves on the next rating after a transfer, not at the transfer. `meets`
+  already refuses a sale since the last rating, by comparing `lastOwnerOf` with the registry's `ownerOf`, and
+  `check` with `ratingsAfterOwnerChange: false` does the same offchain. The next rating clears it.
 - **`paid` and `receipts` count only receipts spent on ratings.** A payment nobody rated with is in the
   `ReceiptIssued` events, not in `scoreOf`. `paid` also saturates at the largest `uint40` (about 1.1 million
   USDC), because it is a display figure and must not be able to block grounding.

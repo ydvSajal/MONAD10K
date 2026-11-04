@@ -259,6 +259,24 @@ contract GroundedReputationTest is Base, WebAuthnHelper {
         assertFalse(grd.meets(AGENT, 75, 5), "too few reviewers");
     }
 
+    function test_meets_refusesAgentSoldSinceLastRating() public {
+        uint256 id = _payAndRate(payer, 0.5e6, 80, "quality");
+        _groundIt(payer, PK_PAYER, id, 80, false);
+        assertTrue(grd.meets(AGENT, 75, 1));
+
+        identity.setAgent(AGENT, makeAddr("buyer"), agentWallet);
+        assertFalse(grd.meets(AGENT, 75, 1), "the score does not come with the sale");
+        assertFalse(grd.meets(AGENT, 0, 0), "not even an open policy, the sale is unrated work");
+
+        identity.setAgent(AGENT, agentOwner, agentWallet);
+        assertTrue(grd.meets(AGENT, 75, 1), "sold back to the owner the ratings were for");
+    }
+
+    function test_meets_unratedAgentPassesOnlyAnOpenPolicy() public view {
+        assertTrue(grd.meets(AGENT, 0, 0));
+        assertFalse(grd.meets(AGENT, 1, 0));
+    }
+
     function test_ownerChangedAt_recordsLazilyOnNextRating() public {
         uint256 id = _payAndRate(payer, 0.5e6, 80, "quality");
         _groundIt(payer, PK_PAYER, id, 80, false);

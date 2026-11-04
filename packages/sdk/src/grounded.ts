@@ -396,7 +396,7 @@ export class Grounded {
     return { receiptId: issued.args.id, txHash: receipt.transactionHash };
   }
 
-  /** Bind (or rotate to) this authenticator's passkey for the connected wallet. */
+  /** Bind this authenticator's passkey to the connected wallet. Final: a wallet binds once. */
   async bindPasskey(authenticator: Authenticator): Promise<Hex> {
     const registry = this.address("reviewerRegistry");
     const { account } = this.signer();

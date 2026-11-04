@@ -73,7 +73,7 @@ string such as `"0.05"`, at least `"0.01"`. `mode`:
 
 ### `bindPasskey(authenticator): Promise<Hex>`
 
-Binds a passkey to your address in `ReviewerRegistry`. Once per reviewer. Rebinding replaces the key.
+Binds a passkey to your address in `ReviewerRegistry`. Final: one passkey per wallet, so a second call reverts `AlreadyBound`. A lost passkey means rating from a new wallet.
 
 ### `rate({ receiptId, score, tag?, authenticator, deadlineSec? }): Promise<{ feedbackTx, groundTx, feedbackIndex }>`
 

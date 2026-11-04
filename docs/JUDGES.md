@@ -13,16 +13,16 @@ if the reviewer paid the agent onchain, through `ReceiptRouter`, and signed with
 | SDK on npm | [`@sajalydv/grounded-sdk`](https://www.npmjs.com/package/@sajalydv/grounded-sdk) |
 | Repo | https://github.com/ydvSajal/MONAD10K |
 
-## Contracts (Monad testnet, deployed 4 Oct, block 68082112)
+## Contracts (Monad testnet, redeployed 4 Nov, block 76889685)
 
 | Contract | Address |
 |---|---|
-| ReviewerRegistry | [`0xFb38DcB72C222d3943579b4F2c4C91ebcBE4eBa6`](https://testnet.monadscan.com/address/0xFb38DcB72C222d3943579b4F2c4C91ebcBE4eBa6) |
-| ReceiptRegistry | [`0xa89b76Ea9AcEA12A66Fb23d318219b9119362301`](https://testnet.monadscan.com/address/0xa89b76Ea9AcEA12A66Fb23d318219b9119362301) |
-| ReceiptRouter | [`0xab442c3cbc2997a6218FEA0DD253c3717edfc62e`](https://testnet.monadscan.com/address/0xab442c3cbc2997a6218FEA0DD253c3717edfc62e) |
-| GroundedReputation | [`0xaDDd1f2F876CD253C57177b675905Bdb0061bF82`](https://testnet.monadscan.com/address/0xaDDd1f2F876CD253C57177b675905Bdb0061bF82) |
+| ReviewerRegistry | [`0x41B65e7E027FB47cF4DE964F4F82A76Bc6BC5429`](https://testnet.monadscan.com/address/0x41B65e7E027FB47cF4DE964F4F82A76Bc6BC5429) |
+| ReceiptRegistry | [`0x2E3FD91A619b39210DC1E1Ee94bDa53bD6b1Cf2c`](https://testnet.monadscan.com/address/0x2E3FD91A619b39210DC1E1Ee94bDa53bD6b1Cf2c) |
+| ReceiptRouter | [`0xbE9dbCc36240b358233B2019253178B02D44db54`](https://testnet.monadscan.com/address/0xbE9dbCc36240b358233B2019253178B02D44db54) |
+| GroundedReputation | [`0xCA50d5222566F313D9fb890F2bce144381445356`](https://testnet.monadscan.com/address/0xCA50d5222566F313D9fb890F2bce144381445356) |
 
-All four sources are verified on monadscan.
+All sources are verified on monadscan, including `GigEscrow` at `0x5928c1a02BC3937aBe7cd5b5E39031507eC535c8`.
 
 ERC-8004 registries used (not ours): Identity `0x8004A818BFB912233c491871b3d84c89A494BD9e`, Reputation
 `0x8004B663056A597Dffe9eCcC1965A193B7388713`. No contract has an owner, admin, pauser or upgrade proxy.
@@ -65,8 +65,8 @@ Agent 2120 is an orphan from an interrupted seed run (registered, never rated).
 4. **Onchain** (1 min). Read the score straight from the contract, no Grounded code involved:
 
    ```sh
-   cast call 0xaDDd1f2F876CD253C57177b675905Bdb0061bF82 "meets(uint256,uint8,uint32)(bool)" 2119 70 2 --rpc-url https://testnet-rpc.monad.xyz   # false
-   cast call 0xaDDd1f2F876CD253C57177b675905Bdb0061bF82 "meets(uint256,uint8,uint32)(bool)" 2118 70 2 --rpc-url https://testnet-rpc.monad.xyz   # true
+   cast call 0xCA50d5222566F313D9fb890F2bce144381445356 "meets(uint256,uint8,uint32)(bool)" 2119 70 2 --rpc-url https://testnet-rpc.monad.xyz   # false
+   cast call 0xCA50d5222566F313D9fb890F2bce144381445356 "meets(uint256,uint8,uint32)(bool)" 2118 70 2 --rpc-url https://testnet-rpc.monad.xyz   # true
    ```
 
 5. **Full loop locally** (optional, about 10 min). The README Quickstart deploys to an anvil fork of testnet,

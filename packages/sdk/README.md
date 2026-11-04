@@ -14,10 +14,10 @@ const grounded = new Grounded({
   chain: "monad-testnet",
   addresses: {
     // from deployments/10143.json in the repo
-    groundedReputation: "0xaDDd1f2F876CD253C57177b675905Bdb0061bF82",
-    receiptRegistry: "0xa89b76Ea9AcEA12A66Fb23d318219b9119362301",
-    receiptRouter: "0xab442c3cbc2997a6218FEA0DD253c3717edfc62e",
-    reviewerRegistry: "0xFb38DcB72C222d3943579b4F2c4C91ebcBE4eBa6",
+    groundedReputation: "0xCA50d5222566F313D9fb890F2bce144381445356",
+    receiptRegistry: "0x2E3FD91A619b39210DC1E1Ee94bDa53bD6b1Cf2c",
+    receiptRouter: "0xbE9dbCc36240b358233B2019253178B02D44db54",
+    reviewerRegistry: "0x41B65e7E027FB47cF4DE964F4F82A76Bc6BC5429",
   },
 });
 

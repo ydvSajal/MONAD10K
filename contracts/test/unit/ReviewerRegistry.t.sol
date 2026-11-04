@@ -106,12 +106,12 @@ contract ReviewerRegistryTest is Test, WebAuthnHelper {
         reg.bind(qx, qy, p);
     }
 
-    function test_bind_replayFailsAfterNonceBump() public {
+    function test_bind_replayFails() public {
         (uint256 qx, uint256 qy) = vm.publicKeyP256(PK_A);
         WebAuthnSig memory p = _proof(PK_A, alice, FLAGS_UP_UV, rp);
         vm.startPrank(alice);
         reg.bind(qx, qy, p);
-        vm.expectRevert(ReviewerRegistry.BadSignature.selector);
+        vm.expectRevert(abi.encodeWithSelector(ReviewerRegistry.AlreadyBound.selector, alice));
         reg.bind(qx, qy, p);
         vm.stopPrank();
     }
@@ -127,28 +127,21 @@ contract ReviewerRegistryTest is Test, WebAuthnHelper {
         reg.bind(qx, qy, p);
     }
 
-    function test_bind_rotationFreesOldKey() public {
+    /// @dev A stolen wallet must not be able to swap in its own passkey.
+    function test_bind_isFinal() public {
         _bind(alice, PK_A);
-        _bind(alice, PK_B);
 
         (uint256 ax, uint256 ay) = vm.publicKeyP256(PK_A);
         (uint256 bx, uint256 by) = vm.publicKeyP256(PK_B);
+        WebAuthnSig memory p = _proof(PK_B, alice, FLAGS_UP_UV, rp);
+        vm.prank(alice);
+        vm.expectRevert(abi.encodeWithSelector(ReviewerRegistry.AlreadyBound.selector, alice));
+        reg.bind(bx, by, p);
+
         (uint256 kx, uint256 ky) = reg.keyOf(alice);
-        assertEq(kx, bx);
-        assertEq(ky, by);
-        assertEq(reg.reviewerOf(keccak256(abi.encode(ax, ay))), address(0), "old key released");
-        assertEq(reg.nonces(alice), 2);
-
-        _bind(bob, PK_A); // freed key can be claimed by someone else
-        assertEq(reg.reviewerOf(keccak256(abi.encode(ax, ay))), bob);
-    }
-
-    function test_bind_sameKeyRebindKeepsMapping() public {
-        _bind(alice, PK_A);
-        _bind(alice, PK_A);
-        (uint256 qx, uint256 qy) = vm.publicKeyP256(PK_A);
-        assertEq(reg.reviewerOf(keccak256(abi.encode(qx, qy))), alice);
-        assertEq(reg.nonces(alice), 2);
+        assertEq(kx, ax);
+        assertEq(ky, ay);
+        assertEq(reg.reviewerOf(keccak256(abi.encode(ax, ay))), alice);
     }
 
     function test_keyOf_zeroForUnbound() public view {
