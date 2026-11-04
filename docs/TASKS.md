@@ -19,14 +19,14 @@ Legend: `[x]` done · `[ ]` open · `[~]` partly done · `[-]` cut on purpose
 - [x] Stress check 4 Oct: fuzz 10k runs, invariants 2048 runs x 128 depth (~262k calls per suite), 0 failures
 - [x] Static analysis: Slither + Aderyn, only known false positives (`docs/static-analysis.md`)
 - [x] Gas from real transactions (`docs/gas.md`)
-- [x] **Testnet deploy, 4 Oct, block 68082112, rpId `grounded.sajal.sbs`** — addresses in `deployments/10143.json`; wiring and `RP_ID_HASH` verified on chain
+- [x] **Testnet deploy, redeployed 4 Nov, block 76889685, rpId `grounded.sajal.sbs`** — addresses in `deployments/10143.json`; wiring and `RP_ID_HASH` verified on chain
 
 | Contract | Address |
 |---|---|
-| ReviewerRegistry | `0xFb38DcB72C222d3943579b4F2c4C91ebcBE4eBa6` |
-| ReceiptRegistry | `0xa89b76Ea9AcEA12A66Fb23d318219b9119362301` |
-| ReceiptRouter | `0xab442c3cbc2997a6218FEA0DD253c3717edfc62e` |
-| GroundedReputation | `0xaDDd1f2F876CD253C57177b675905Bdb0061bF82` |
+| ReviewerRegistry | `0x41B65e7E027FB47cF4DE964F4F82A76Bc6BC5429` |
+| ReceiptRegistry | `0x2E3FD91A619b39210DC1E1Ee94bDa53bD6b1Cf2c` |
+| ReceiptRouter | `0xbE9dbCc36240b358233B2019253178B02D44db54` |
+| GroundedReputation | `0xCA50d5222566F313D9fb890F2bce144381445356` |
 
 ### SDK and apps
 - [x] `@sajalydv/grounded-sdk` read path: `score`, `check`, `assertTrusted`, `payoutWallet`, `rawScore`; live testnet addresses are the defaults
@@ -69,7 +69,6 @@ Legend: `[x]` done · `[ ]` open · `[~]` partly done · `[-]` cut on purpose
 
 | # | Question | Default if unanswered |
 |---|---|---|
-| a | Require the old passkey to sign a key rotation? | Leave as is for testnet |
 | b | Keep the `.sbs` rpId despite phishing-TLD filtering risk? | Keep |
 | 8 | Chainlink CRE in the submission? | Remove |
 

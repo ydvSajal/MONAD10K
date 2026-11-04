@@ -168,9 +168,13 @@ contract GroundedReputation is EIP712, IGroundedReputation {
         });
     }
 
-    /// @notice Onchain trust check for consumers (see `GroundedGate`).
+    /// @notice Onchain trust check for consumers (see `GroundedGate`). False for an agent sold since
+    ///         its last rating, so a good score cannot simply be bought along with the agent.
+    /// @dev ponytail: the next rating resets `lastOwner`, so a buyer's own rating clears this. Per-owner
+    ///      histograms would close that; until then `ownerChangedAt` keeps the sale public.
     function meets(uint256 agentId, uint8 minScore, uint32 minReviewers) external view returns (bool) {
         AgentState storage a = _agents[agentId];
+        if (a.lastOwner != address(0) && a.lastOwner != identity.ownerOf(agentId)) return false;
         if (a.reviewers < minReviewers) return false;
         return _histogram[agentId].median(a.weightMass) >= minScore;
     }

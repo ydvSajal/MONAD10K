@@ -32,7 +32,7 @@ some of the `T` numbers (T2, T4, T5, T6, T7, T9, T12), so this maps every threat
 | Privileged key rewrites scores (T12) | None exists: no owner, admin, pauser or upgrade path | Static: no such function in any contract; `/docs/contracts` |
 | Privacy of reviewers (T9) | Not addressed: everything is public. Use a dedicated rating wallet; ZK receipts are roadmap | `/docs/threat-model` |
 | Upgradeable ERC-8004 registries lie | A trust assumption, not ours to remove; the adapter is one small library | `/docs/threat-model`, `Erc8004Adapter` |
-| Key rotation needs no old passkey | **Open decision.** Anyone controlling the wallet can rebind | `/docs/threat-model` |
+| Stolen wallet binds its own passkey | A binding is final: `bind` reverts `AlreadyBound` | `test_bind_isFinal` |
 
 Threat numbers the pack refers to but never defines (T1, T3, T8, T10, T11) are not mapped: the source spec that
 defined them is not in the repository.

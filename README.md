@@ -6,6 +6,27 @@ A rating counts only if the reviewer **paid the agent on chain** (one receipt, o
 
 > Status: in development for Monad Metropolis. Contracts are unaudited and testnet-only.
 
+## Monad Blitz Mumbai: what is new and what is not
+
+**Grounded (contracts, SDK, explorer) was built by me before this event** and is public at [github.com/ydvSajal/MONAD10K](https://github.com/ydvSajal/MONAD10K), first commit 17 Sep 2026. It is not a Blitz-day project.
+
+**Built on 4 Nov 2026, the Blitz day:**
+
+- `GigEscrow` (`contracts/src/gigs/`): hire a freelancer by ERC-8004 id. The contract itself reverts `AgentNotTrusted` unless `GroundedReputation.meets` passes, then escrows the payment plus a 5% fee and releases it through the router so the client gets a receipt and can rate.
+- Two contract changes in Grounded, then a full redeploy: `meets` refuses an agent sold since its last rating, and a passkey binding is final (`AlreadyBound`, no rotation).
+
+**Deployed on Monad Testnet (10143), redeployed 4 Nov 2026, sources verified.** Click an address to read the code on the explorer:
+
+| Contract | Address |
+|---|---|
+| GigEscrow (new today) | [`0x5928c1a02BC3937aBe7cd5b5E39031507eC535c8`](https://testnet.monadscan.com/address/0x5928c1a02BC3937aBe7cd5b5E39031507eC535c8#code) |
+| GroundedReputation | [`0xCA50d5222566F313D9fb890F2bce144381445356`](https://testnet.monadscan.com/address/0xCA50d5222566F313D9fb890F2bce144381445356#code) |
+| ReceiptRouter | [`0xbE9dbCc36240b358233B2019253178B02D44db54`](https://testnet.monadscan.com/address/0xbE9dbCc36240b358233B2019253178B02D44db54#code) |
+| ReceiptRegistry | [`0x2E3FD91A619b39210DC1E1Ee94bDa53bD6b1Cf2c`](https://testnet.monadscan.com/address/0x2E3FD91A619b39210DC1E1Ee94bDa53bD6b1Cf2c#code) |
+| ReviewerRegistry | [`0x41B65e7E027FB47cF4DE964F4F82A76Bc6BC5429`](https://testnet.monadscan.com/address/0x41B65e7E027FB47cF4DE964F4F82A76Bc6BC5429#code) |
+
+Grounded deploy block 76889685, GigEscrow block 76891053. The earlier 4 Oct deployment (block 68082112) is retired. Live app: https://grounded.sajal.sbs.
+
 ## Why it exists
 
 Agent reputation today is self-attested: anyone can write feedback about anyone, so the cheapest attack is also the most effective one — spin up wallets, spray five-star reviews, sell a worthless agent. ERC-8004 gives agents a shared place to *store* feedback, but it does not say which feedback deserves belief.
@@ -112,11 +133,12 @@ Every check has its own error and its own test. The order is cheapest-first, so 
 | Outliers dragging the score | The score is a weighted **median**, not a mean |
 | Rate, then revoke the evidence | `sweepRevoked` removes it permissionlessly |
 | Reusing one payment | The receipt is consumed on the first rating, and expires after 30 days |
-| Score inherited after a sale | `ownerChangedAt` is recorded, so consumers can discount ratings from before the sale |
+| Score inherited after a sale | `meets` refuses an agent sold since its last rating, and `ownerChangedAt` keeps the sale public |
 
 Honest limits:
 
-- A passkey is **not** proof of personhood. The contract cannot tell a hardware key from a software one, and it is not meant to. Sybil resistance comes from the payments, not the keys.
+- A passkey is **not** proof of personhood. The contract cannot tell a hardware key from a software one, and it is not meant to. Grounded raises the cost of faking through payments; it is not sybil-proof.
+- **ERC-8004 is a dependency.** Grounded's contracts have no admin, but the ERC-8004 registries they read are upgradeable by their owner.
 - **An agent's owner can still rate itself through wallets it controls.** The exclusions only catch addresses linked to the agent on chain. And because the payment lands in the agent's *own* wallet, the owner gets the money back — the real cost of self-rating is gas, not the amount paid. Payment-grounding stops strangers from spraying reviews at an agent; it does not stop an agent from reviewing itself through fresh wallets. The explorer is meant to surface reviewer patterns so this stays visible rather than hidden.
 
 ## Repo
@@ -201,14 +223,14 @@ Grounded runs on Monad Testnet (10143) because three things it needs exist there
 - **Cheap, fast blocks**: one rating is three transactions (pay, `giveFeedback`, `ground`). That only works as a habit if each step is cheap and quick.
 - **Live ERC-8004 registries and USDC (EIP-3009)** on the same chain, so the receipt, the feedback and the score all stay onchain.
 
-Deployed 4 Oct 2026 (block 68082112), all four sources verified on [testnet.monadscan.com](https://testnet.monadscan.com):
+Redeployed 4 Nov 2026 (block 76889685), all sources verified on [testnet.monadscan.com](https://testnet.monadscan.com):
 
 | Contract | Address |
 |---|---|
-| ReviewerRegistry | `0xFb38DcB72C222d3943579b4F2c4C91ebcBE4eBa6` |
-| ReceiptRegistry | `0xa89b76Ea9AcEA12A66Fb23d318219b9119362301` |
-| ReceiptRouter | `0xab442c3cbc2997a6218FEA0DD253c3717edfc62e` |
-| GroundedReputation | `0xaDDd1f2F876CD253C57177b675905Bdb0061bF82` |
+| ReviewerRegistry | `0x41B65e7E027FB47cF4DE964F4F82A76Bc6BC5429` |
+| ReceiptRegistry | `0x2E3FD91A619b39210DC1E1Ee94bDa53bD6b1Cf2c` |
+| ReceiptRouter | `0xbE9dbCc36240b358233B2019253178B02D44db54` |
+| GroundedReputation | `0xCA50d5222566F313D9fb890F2bce144381445356` |
 
 Live demo: https://grounded.sajal.sbs. Judge walkthrough: [`docs/JUDGES.md`](docs/JUDGES.md).
 
@@ -216,7 +238,7 @@ Live demo: https://grounded.sajal.sbs. Judge walkthrough: [`docs/JUDGES.md`](doc
 
 **AI coding tools:** this project was built with [Claude Code](https://claude.com/claude-code) (Anthropic) as a coding assistant, under the author's direction and review. Commits it helped write carry a `Co-Authored-By` trailer. Tests, fork runs and on-chain checks were run and read by the author.
 
-**Build window:** no pre-existing code. The first commit is 17 Sep 2026 and everything in this repo was written during the hackathon.
+**Build window:** for Monad Metropolis, no pre-existing code: the first commit is 17 Sep 2026 and everything here was written during that hackathon. For Monad Blitz Mumbai the Grounded code pre-dates the event, see the section at the top.
 
 **Third-party code and data, used unmodified unless noted:**
 

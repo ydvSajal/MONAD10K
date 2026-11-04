@@ -168,6 +168,7 @@ export const reviewerRegistryAbi = [
   },
   { type: "error", name: "BadSignature", inputs: [] },
   { type: "error", name: "KeyAlreadyBound", inputs: [{ name: "keyHash", type: "bytes32" }] },
+  { type: "error", name: "AlreadyBound", inputs: [{ name: "reviewer", type: "address" }] },
   {
     type: "event",
     name: "ReviewerBound",

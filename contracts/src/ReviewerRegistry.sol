@@ -8,7 +8,9 @@ import {WebAuthnSig} from "./types/GroundedTypes.sol";
 
 /// @title ReviewerRegistry
 /// @notice Binds an address to a P256 passkey. Ratings must later be signed by that passkey.
-/// @dev No owner, no admin. One passkey maps to one address; an address may rotate its key.
+/// @dev No owner, no admin. One passkey per wallet, one wallet per passkey, and a binding is final:
+///      otherwise a stolen wallet could bind a new key, and the passkey would not be a second factor.
+///      A lost passkey means rating from a new wallet.
 contract ReviewerRegistry is EIP712 {
     struct Key {
         uint256 qx;
@@ -28,24 +30,24 @@ contract ReviewerRegistry is EIP712 {
 
     error BadSignature();
     error KeyAlreadyBound(bytes32 keyHash);
+    error AlreadyBound(address reviewer);
 
     constructor(bytes32 rpIdHash) EIP712("GroundedReviewerRegistry", "1") {
         RP_ID_HASH = rpIdHash;
     }
 
-    /// @notice Bind (or rotate to) the passkey `(qx, qy)`. `proof` is that passkey signing `bindDigest`.
+    /// @notice Bind the passkey `(qx, qy)` to the caller, once. `proof` is that passkey signing `bindDigest`.
     function bind(uint256 qx, uint256 qy, WebAuthnSig calldata proof) external {
+        Key memory current = _keys[msg.sender];
+        if (current.qx != 0 || current.qy != 0) revert AlreadyBound(msg.sender);
+
         uint256 nonce = nonces[msg.sender];
         if (!GroundedWebAuthn.verify(RP_ID_HASH, bindDigest(msg.sender, qx, qy, nonce), proof, qx, qy)) {
             revert BadSignature();
         }
 
         bytes32 keyHash = keccak256(abi.encode(qx, qy));
-        address holder = reviewerOf[keyHash];
-        if (holder != address(0) && holder != msg.sender) revert KeyAlreadyBound(keyHash);
-
-        Key memory old = _keys[msg.sender];
-        if (old.qx != 0 || old.qy != 0) delete reviewerOf[keccak256(abi.encode(old.qx, old.qy))];
+        if (reviewerOf[keyHash] != address(0)) revert KeyAlreadyBound(keyHash);
 
         _keys[msg.sender] = Key(qx, qy);
         reviewerOf[keyHash] = msg.sender;

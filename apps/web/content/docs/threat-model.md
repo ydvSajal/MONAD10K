@@ -47,15 +47,17 @@ through wallets it controls.
 ## Known limitations
 
 - **A passkey is not proof of personhood.** The contract cannot tell a hardware key from a software one and is
-  not meant to. Sybil resistance comes from the payments, not the keys. Passkeys make a rating a deliberate,
+  not meant to. Payments raise the cost of faking; nothing here is sybil-proof. Passkeys make a rating a deliberate,
   signed act bound to an address.
-- **Key rotation does not need the old passkey.** `bind` is signed by the new key. Whoever controls the
-  reviewer's wallet can rebind it to a new passkey. The passkey is therefore not an independent second factor
-  for that wallet.
+- **A binding is final.** One passkey per wallet, so a stolen wallet cannot swap in its own key. The cost: a
+  lost passkey means rating from a new wallet.
 - **A revoked rating counts until someone sweeps it.** Bounded and visible, and anyone can fix it, but the
   score can lag.
-- **`ownerChangedAt` is lazy.** It moves on the next rating after a transfer. Use `lastOwnerOf` (the SDK's
-  `check` does) to catch a sale in between.
+- **A sale can be cleared by the next rating.** `meets` refuses an agent sold since its last rating, but a new
+  rating resets that check, including one from the buyer's own wallet. `ownerChangedAt` stays public, and it
+  moves only on that next rating.
+- **ERC-8004 is a dependency we do not control.** Grounded's contracts have no admin, but the ERC-8004
+  registries they read are upgradeable by their owner.
 - **The score is quantised to multiples of 5** and takes the lower bucket on an exact tie.
 - **Privacy.** Reviewers, receipts and amounts are public onchain. Use a dedicated rating wallet if you do not
   want a rating linked to your other activity. Zero-knowledge receipts are on the roadmap, not built.

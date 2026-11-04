@@ -3,7 +3,7 @@
 Ready-to-paste text for the Monad Metropolis entry. Placeholder now, final on 12 Oct.
 Keep this file in sync with what was actually submitted — note the date each time.
 
-- **Repo:** https://github.com/ydvSajal/MONAD10K (currently **private**: must be public or shared with the judge address before submitting)
+- **Repo:** https://github.com/ydvSajal/MONAD10K (public)
 - **Judge access to grant:** `metropolis@hackathon.monad.xyz`
 - **Chain:** Monad Testnet, 10143
 - **Submitted:** _not yet — placeholder pending_
@@ -59,7 +59,7 @@ unless that changes. Do **not** tick a sponsor whose SDK is not actually carryin
 | Web app + docs | https://monad-10-k.vercel.app (explorer and `/docs`) |
 | Demo video | _Ship week, 7 Oct_ |
 | Pitch video | _Ship week, 8 Oct_ |
-| Contract addresses | `deployments/10143.json` (Monad testnet, deployed 4 Oct, block 68082112) |
+| Contract addresses | `deployments/10143.json` (Monad testnet, redeployed 4 Nov, block 76889685) |
 
 ## What to say about status, honestly
 

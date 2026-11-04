@@ -29,7 +29,7 @@ const STEPS = [
   },
   {
     verb: "Score",
-    body: "GroundedReputation keeps a weighted median of paid ratings. Anyone reads it with scoreOf or meets. No admin key, no offchain server.",
+    body: "GroundedReputation keeps a weighted median of paid ratings. Anyone reads it with scoreOf or meets. No admin key on Grounded's contracts, no offchain server.",
   },
 ];
 
