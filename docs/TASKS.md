@@ -52,7 +52,7 @@ Legend: `[x]` done · `[ ]` open · `[~]` partly done · `[-]` cut on purpose
 
 ### Can be done in code next
 - [ ] Vercel env `GROUNDED_ADDRESSES` so the hosted explorer reads the live contracts
-- [x] Seed real ratings on testnet (10 Oct): agents 2118 honest 90/90, 2119 sybil grounded 20 vs raw 88, 2121 wash rejected then 60
+- [x] Seed real ratings on testnet (4 Nov, new deployment): agents 2575 honest 90/90, 2576 sybil grounded 20 vs raw 87, 2577 wash rejected then 60 (10 Oct agents 2118-2121 were on the retired deployment)
 - [ ] Fresh-clone e2e against testnet (so far only against a fork)
 - [x] Verify contract sources on the Monad explorer (all 4 on testnet.monadscan.com, 11 Oct)
 - [ ] Tag `v0.1.0` after npm publish

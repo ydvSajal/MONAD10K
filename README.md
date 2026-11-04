@@ -284,7 +284,7 @@ Rule: a third-party piece ships only if Grounded needs it with no prize attached
 | **Testnet deploy**, `deployments/10143.json` | **Deployed 4 Oct** (block 68082112, rpId `grounded.sajal.sbs`); wiring verified on chain; the SDK uses these addresses by default |
 | Playground (`/playground`), `BrowserPasskey`, `/api/drip` faucet | Built; browser E2E passes in real Chrome with a virtual WebAuthn authenticator. **Not tried on a real device** (Touch ID, phone), and no Privy email login: a browser-stored test wallet instead |
 | AI: `@sajalydv/grounded-mcp` (read-only MCP tool), model-driven buyer (`demo-buyer agent`) | Built; tested with a scripted model and run once with a real model (OpenRouter free tier, on a fork); KIMI/Qwen not run, not claimed |
-| `@sajalydv/grounded-sdk@0.1.0` on npm; seeded testnet agents 2118 (honest), 2119 (sybil), 2121 (wash rejected) | Done |
+| SDK 0.2.0 in `packages/sdk` (npm 0.1.0 is stale and the account is suspended, so 0.2.0 is not published); seeded testnet agents 2575 (honest), 2576 (sybil), 2577 (wash rejected) | Done |
 | Envio indexer | Not built |
 
 Contracts are **unaudited and testnet-only**. Do not put real money behind them.
